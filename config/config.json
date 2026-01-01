@@ -1,0 +1,5 @@
+{
+    "flight_dates_from": "2026-06-01",
+    "flight_dates_to": "2026-09-30",
+    "flight_days": ["Monday", "Thursday"]
+}

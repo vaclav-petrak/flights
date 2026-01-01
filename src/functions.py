@@ -4,9 +4,13 @@ from auth import drive_service
 import requests
 import time
 import pandas as pd
+import json
 from datetime import datetime
 import os
 
+def load_config(config_path = "'./config/config.json"):
+    with open(config_path, 'r') as f:
+        return json.load(f)
 
 def create_spreadsheet(title):
     """ Creates new Google spreadsheet spreadsheet """

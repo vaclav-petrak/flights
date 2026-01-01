@@ -1,14 +1,17 @@
 import pandas as pd
 import os
 from datetime import datetime
-from functions import get_flight_price, export_to_sheets, get_dates_between 
+from functions import get_flight_price, export_to_sheets, get_dates_between, load_config
 
 def main(print_output=True):
-    FLIGHT_DATES_FROM = "2026-06-01"
-    FLIGHT_DATES_TO = "2026-09-30"
-    FLIGHT_DAYS = ['Monday', 'Thursday']
+    
+    config = load_config(config_path='./config/config.json')
+    print(config['flight_dates_from'])
 
-    departure_dates = get_dates_between(FLIGHT_DATES_FROM, FLIGHT_DATES_TO, days_of_week=FLIGHT_DAYS)
+    departure_dates = get_dates_between(
+        start_date = config['flight_dates_from'],
+        end_date = config['flight_dates_to'],
+        days_of_week =  config['flight_days'])
 
     # Get the absolute path to the directory containing this script
     script_dir = os.path.dirname(os.path.abspath(__file__))

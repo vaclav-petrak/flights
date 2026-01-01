@@ -1,5 +1,14 @@
-__pycache__
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# --- OS / Editor ---
 .DS_Store
+
+# --- Local / temporary ---
 sandbox*
-.venv
+
+# --- Secrets / credentials ---
 config/credentials.json

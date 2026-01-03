@@ -4,9 +4,11 @@ from datetime import datetime
 from functions import get_flight_price, export_to_sheets, get_dates_between, load_config
 
 def main(print_output=True):
-    
-    config = load_config(config_path='./config/config.json')
-    print(config['flight_dates_from'])
+
+    # Load config
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, '../config/config.json')
+    config = load_config(config_path=config_path)
 
     departure_dates = get_dates_between(
         start_date = config['flight_dates_from'],
@@ -47,7 +49,7 @@ def main(print_output=True):
             price_to_prg = get_flight_price(date=departure_date, departure = "JSI", arrival = "PRG")
             current_date_to_prg[departure_date] = price_to_prg 
             if print_output:
-                print(f"    {departure_date} from / to prague: {price_from_prg} / {price_to_prg}")
+                print(f"    {departure_date} from / to Prague: {price_from_prg} / {price_to_prg}")
 
         df_from_prg = pd.DataFrame([current_date_from_prg]).set_index('offer_date')
         df_to_prg = pd.DataFrame([current_date_to_prg]).set_index('offer_date')

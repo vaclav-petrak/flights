@@ -60,46 +60,76 @@ def export_to_sheets(df, sheet = 'data', spreadsheet_id = '1UpjPSDufq4DkDN0cQdRG
         body=body).execute()
     print('{0} cells updated.'.format(result.get('updatedCells')))
 
-def get_flight_price(date, departure = "PRG", arrival = "JSI"):
-    """ Gets data from Ryanair website """
+def convert_currency(amount, from_curr, to_curr="EUR"):
+    """
+    Converts amount dynamically using the free Frankfurter API.
+    """
+    if from_curr == to_curr:
+        return amount
+    
+    try:
+        # Request exchange rate
+        url = f"https://api.frankfurter.app/latest"
+        params = {"amount": amount, "from": from_curr, "to": to_curr}
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status() # Check for HTTP errors
+        data = response.json()
+        
+        return data["rates"][to_curr]
+        
+    except (requests.RequestException, KeyError, ValueError) as e:
+        print(f"Conversion failed ({from_curr} to {to_curr}): {e}")
+        return None
+
+def get_flight_price(date, departure="PRG", arrival="JSI", target_currency="EUR"):
+    """ Gets data from Ryanair website and converts currency dynamically """
     
     url = "https://services-api.ryanair.com/farfnd/3/oneWayFares"
-
-    # Parameters for the GET request
+    
     params = {
         "departureAirportIataCode": departure,
         "arrivalAirportIataCode": arrival,
         "outboundDepartureDateFrom": date,
-        "outboundDepartureDateTo": date}
+        "outboundDepartureDateTo": date
+    }
 
-    # Making the GET request
     current_date = datetime.now().date()
+    search_date = datetime.strptime(date, "%Y-%m-%d").date()
 
-    if datetime.strptime(date, "%Y-%m-%d").date() >= current_date:
-        # Request data
-        response = requests.get(url, params=params)
-        data = response.json()
+    price = None # Default initialization
 
-        # Extracting relevant information
+    if search_date >= current_date:
         try:
-            fare = data["fares"][0]
-            price = fare["outbound"]["price"]["value"]
-            currency_code = fare["outbound"]["price"]["currencyCode"]
-        except (IndexError, KeyError):
-            # If no fares are present or the expected structure is not found
-            price = None
-            currency_code = None
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
 
-        if currency_code == "CZK": price = price/25
-        
-        if not price == None:
-            price = round(price)
+            # Extracting relevant information
+            fare = data["fares"][0]
+            raw_price = fare["outbound"]["price"]["value"]
+            currency_code = fare["outbound"]["price"]["currencyCode"]
             
-        time.sleep(1)
+            # Dynamic Conversion
+            price = convert_currency(raw_price, currency_code, target_currency)
+
+        except (IndexError, KeyError):
+            # No fares found
+            price = None
+        except requests.RequestException as e:
+            print(f"Ryanair API Request failed: {e}")
+            price = None
+
+        if price is not None:
+            price = round(price, 0)
+            
+        time.sleep(1) # Be polite to the API
     
-    else:
-        price = None
-    return(price)
+    return price
+
+
+
+
 
 def get_dates_between(start_date, end_date, days_of_week=None):
     """

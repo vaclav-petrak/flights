@@ -36,23 +36,43 @@ flight_price_tracker/
    cd flight_price_tracker
    ```
 
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+2. Install UV (if not already installed):
 
-3. Set up your Google Sheets API credentials:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+3. Install dependencies with UV:
+
+```bash
+uv sync
+```
+
+4. Set up your Google Sheets API credentials:
    - Follow the [Google Sheets API Python Quickstart](https://developers.google.com/sheets/api/quickstart/python) to obtain your `credentials.json` file.
    - Place the `credentials.json` file in the `config/` directory.
 
 ## Usage
+
 Run the main script to fetch and save flight prices:
+
+```bash
+uv run python src/main.py
 ```
-python src/main.py
+
+For automated execution, you can set up a cron job:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add line to run every hour
+0 * * * * /Users/vaclav/Code/flight_price_tracker/scripts/run_flight_tracker.sh
 ```
 
 I run the script from command line using conda enviroment
-```
+
+```bash
 /opt/homebrew/anaconda3/bin/python /Users/vaclav/OneDrive/personal/sw/flight_price_tracker/src/main.py
 ```
 
@@ -73,9 +93,6 @@ Contributions to improve the project are welcome. Please follow these steps:
 3. Commit your changes.
 4. Push to the branch.
 5. Create a new Pull Request.
-
-## License
-[Specify your license here, e.g., MIT, GPL, etc.]
 
 ## Contact
 [Vaclav B. Petrak] - [vaclav.b.petrak@gmail.com]

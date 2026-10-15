@@ -12,3 +12,9 @@ sandbox*
 
 # --- Secrets / credentials ---
 config/credentials.json
+
+# --- Local booking (names stay on this machine; only dates are published) ---
+booking/
+
+# --- Logs ---
+data/logs/

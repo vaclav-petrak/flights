@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skiathos Flights</title>
+<meta name="description" content="Daily Ryanair prices between Prague and Skiathos, round trips and house availability.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+<style>
+:root {
+  color-scheme: light only;
+  --page: #f4f3ef;
+  --bg: #ffffff;
+  --panel: #f8f8f6;
+  --ink: #1b1b1a;
+  --ink-2: #5d5c58;
+  --muted: #8c8a84;
+  --line: #e7e6e1;
+  --line-strong: #cfcdc5;
+  --gone: #f4f4f2;
+  --accent: #1a73e8;
+  --warn: #b45309;
+  --occ: #e67c73;
+  --turn: #f2c94c;
+  --occ-soft: #f6cdc9;
+  --turn-soft: #fff0b8;
+  --free-flight: #d4ede0;
+  --cell-ink: #1b1b1a;
+  --shadow: 0 1px 2px rgba(27, 27, 26, 0.04), 0 6px 24px rgba(27, 27, 26, 0.06);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+button { font: inherit; color: inherit; }
+.page { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- header ---------- */
+.top { text-align: center; padding: 32px 0 4px; }
+h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+h1 .arrow { color: var(--muted); font-weight: 400; margin: 0 2px; }
+h1 .yr { color: var(--muted); font-weight: 500; }
+.checked { margin-top: 4px; font-size: 13px; color: var(--ink-2); }
+.checked .stale { color: var(--warn); font-weight: 600; }
+.notice { margin: 10px auto 0; font-size: 13px; color: var(--ink-2); max-width: 640px; }
+.notice:empty { display: none; }
+
+/* ---------- tabs: segmented control ---------- */
+.tabs {
+  display: inline-flex; gap: 2px; margin: 18px auto 0; padding: 3px; border-radius: 10px;
+  background: #e8e7e2; max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.tab {
+  border: 0; background: transparent; padding: 6px 16px; font-size: 13px; color: var(--ink-2);
+  cursor: pointer; border-radius: 8px; white-space: nowrap;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(27, 27, 26, 0.12); }
+
+/* ---------- views ---------- */
+.view { padding: 20px 0 40px; }
+.view[hidden] { display: none; }
+.block { width: fit-content; max-width: 100%; margin: 0 auto; }
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px 24px; padding: 0 2px 10px; font-size: 12px; color: var(--ink-2);
+}
+.toolbar .group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.caption { font-size: 12px; color: var(--muted); padding: 10px 2px 0; }
+.scale-legend { display: inline-flex; align-items: center; gap: 8px; }
+.scale-bar { width: 160px; height: 8px; border-radius: 4px; }
+.scale-legend .ticks { display: flex; justify-content: space-between; width: 160px; font-variant-numeric: tabular-nums; font-size: 10px; color: var(--muted); }
+.scale-stack { display: inline-flex; flex-direction: column; gap: 3px; padding-top: 14px; }
+.toolbar .group { padding-top: 2px; }
+.key-bar { display: inline-block; width: 14px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+.toggle input { margin: 0; accent-color: var(--accent); }
+
+/* ---------- panels + grids ---------- */
+.panel {
+  overflow: auto; max-height: calc(100vh - 230px); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); position: relative;
+}
+table.grid { border-collapse: separate; border-spacing: 0; font-size: 11px; font-variant-numeric: tabular-nums; }
+.grid th, .grid td { padding: 0; }
+.grid thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--panel); color: var(--ink-2);
+  font-weight: 500; border-bottom: 1px solid var(--line);
+}
+.grid thead tr.months th { height: 24px; font-size: 11px; color: var(--ink); font-weight: 650; text-align: left; padding: 6px 0 0 6px; border-bottom: 0; }
+.grid thead tr.days th { top: 24px; }
+.grid thead th.corner { left: 0; z-index: 4; text-align: left; padding: 0 12px; font-weight: 600; color: var(--ink); border-right: 1px solid var(--line); }
+.grid tbody th {
+  position: sticky; left: 0; z-index: 1; background: var(--panel); text-align: left; font-weight: 500;
+  white-space: nowrap; padding: 0 12px; color: var(--ink-2); border-right: 1px solid var(--line);
+}
+.grid th.day { width: 34px; min-width: 34px; height: 40px; text-align: center; line-height: 1.15; vertical-align: bottom; padding-bottom: 8px; }
+.grid th.day .wd { display: block; font-size: 10px; color: var(--muted); }
+.grid th.day .dn { display: block; font-size: 12px; font-weight: 600; color: var(--ink); }
+.grid th.day.past .dn { color: var(--muted); font-weight: 500; }
+.grid th.day .house { position: absolute; left: 4px; right: 4px; bottom: 0; height: 4px; border-radius: 2px 2px 0 0; }
+.house.occ, .key-bar.occ { background: var(--occ); }
+.house.turn, .house.arr, .house.dep, .key-bar.turn { background: var(--turn); }
+.grid .m-start { border-left: 2px solid var(--line-strong); }
+.grid td.p {
+  width: 34px; min-width: 34px; height: 21px; text-align: center; color: var(--cell-ink);
+  border-right: 1px solid var(--bg); border-bottom: 1px solid var(--bg); cursor: default;
+}
+.grid td.p.m-start { border-left: 2px solid var(--line-strong); }
+.grid td.p.gone { background: var(--gone); }
+.grid td.p.na { color: var(--muted); }
+.grid td.avg { width: 46px; min-width: 46px; font-weight: 600; border-left: 2px solid var(--line-strong); }
+.grid thead th.avg-h { width: 46px; border-left: 2px solid var(--line-strong); vertical-align: bottom; padding-bottom: 8px; text-align: center; color: var(--ink); font-weight: 600; }
+.grid tbody tr.m-row > * { border-top: 2px solid var(--line-strong); }
+.grid tbody tr.latest th { color: var(--ink); font-weight: 650; }
+.grid tbody tr:hover th { background: var(--line); color: var(--ink); }
+.grid td.p:hover, .grid td.p.sel { outline: 2px solid var(--ink); outline-offset: -2px; position: relative; z-index: 1; }
+.grid thead th.col-hl { background: var(--line); }
+
+/* ---------- round trips: cards ---------- */
+table.trips { font-size: 12px; }
+.trips thead th { height: 38px; padding: 0 6px; text-align: center; vertical-align: middle; color: var(--ink); font-weight: 650; font-size: 12px; }
+.trips thead th.corner { text-align: left; padding-left: 14px; }
+.trips tbody th { padding: 0 16px 0 14px; }
+.trips tbody th .dn { color: var(--ink); font-weight: 600; font-size: 12px; display: block; }
+.trips tbody th .dd { color: var(--ink-2); font-weight: 400; font-size: 12px; display: block; }
+.trips tbody tr:first-child td { padding-top: 6px; }
+.trips tbody tr:last-child td { padding-bottom: 6px; }
+.trips td.t { padding: 2px; }
+.trips td.t:last-child { padding-right: 6px; }
+.trips tbody th + td.t { padding-left: 6px; }
+.card {
+  width: 112px; height: 46px; border-radius: 7px; padding: 6px 4px 0; text-align: center;
+  color: var(--cell-ink); cursor: default; transition: transform .08s ease;
+}
+.card:hover, .card.sel { box-shadow: inset 0 0 0 2px var(--ink); }
+.card.empty { background: var(--gone); }
+a.card { display: block; text-decoration: none; cursor: pointer; }
+a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26, 0.15); }
+.card .tot { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+.card .ret { font-size: 10.5px; opacity: 0.75; white-space: nowrap; line-height: 1.35; }
+.card .na { color: var(--muted); font-size: 11px; line-height: 1.2; padding-top: 2px; }
+.card.taken { color: var(--muted); }          /* house taken: faded colour + gray letters */
+.card.taken .ret { opacity: 1; }
+.trips.free-only .card.taken { visibility: hidden; }
+.trips tbody tr.past { display: none; }
+.trips.show-past tbody tr.past { display: table-row; opacity: 0.55; }
+
+/* ---------- house calendar ---------- */
+.cal-wrap { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 20px 22px 22px; }
+.cal-months { display: grid; grid-template-columns: repeat(4, 300px); gap: 28px 32px; }
+.month h3 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal .dow { font-size: 10px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.cal .d {
+  min-height: 54px; border-radius: 6px; padding: 3px 4px 6px; font-size: 11px; position: relative;
+  background: var(--panel); color: var(--ink-2); overflow: hidden;
+}
+.cal .d.blank { background: transparent; }
+/* occupancy colours, like the calendar sheet */
+.cal .d.flight { background: var(--free-flight); color: var(--ink); }
+.cal .d.occ { background: var(--occ-soft); color: var(--ink); }
+.cal .d.arr, .cal .d.dep, .cal .d.turn { background: var(--turn-soft); color: var(--ink); }
+.key-sw { display: inline-block; width: 12px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+.cal .d.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.cal .d .n { font-weight: 600; }
+.cal .d .pl { position: absolute; top: 3px; right: 5px; font-size: 10px; }
+.cal .d .fr { font-size: 10px; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; margin-top: 1px; }
+.cal .d .fr i { font-style: normal; color: var(--muted); margin-right: 2px; }
+.cal .d.past { opacity: 0.45; }
+
+/* ---------- tooltip ---------- */
+.tip {
+  position: fixed; z-index: 10; pointer-events: none; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+  box-shadow: 0 8px 28px rgba(27, 27, 26, 0.16); max-width: 280px; display: none; line-height: 1.45;
+}
+.tip b { font-size: 14px; font-variant-numeric: tabular-nums; }
+.tip .muted { color: var(--ink-2); }
+.tip .hint-book { color: var(--accent); margin-top: 3px; }
+.tip.pinned { pointer-events: auto; }
+.tip .book {
+  display: block; margin-top: 8px; padding: 7px 10px; border-radius: 6px; text-align: center;
+  background: #073590; color: #fff; font-weight: 600; text-decoration: none;
+}
+
+
+@media (max-width: 1340px) { .cal-months { grid-template-columns: repeat(2, 300px); } }
+@media (max-width: 720px) {
+  .page { padding: 0; }
+  .top { padding: 20px 16px 0; }
+  h1 { font-size: 22px; }
+  .tabs { margin-top: 14px; }
+  .tab { padding: 6px 11px; }
+  .tab .long { display: none; }
+  .view { padding-top: 14px; }
+  .toolbar, .caption { padding-left: 16px; padding-right: 16px; }
+  .panel, .cal-wrap { border-left: 0; border-right: 0; border-radius: 0; max-height: calc(100vh - 200px); }
+  .cal-wrap { padding: 16px; }
+  .cal-months { grid-template-columns: 1fr; }
+  .corner .long { display: none; }
+  .card { width: 98px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <h1 id="title">Prague <span class="arrow">⇄</span> Skiathos</h1>
+    <div class="checked" id="checked"></div>
+    <div class="notice" id="notice"></div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="trips">Round trips</button>
+      <button class="tab" role="tab" data-view="out">To Skiathos</button>
+      <button class="tab" role="tab" data-view="back">To Prague</button>
+      <button class="tab" role="tab" data-view="house">House<span class="long"> calendar</span></button>
+    </nav>
+  </header>
+
+  <section class="view" id="view-trips" hidden>
+    <div class="block">
+      <div class="toolbar" id="tripsToolbar"></div>
+      <div class="panel"><table class="grid trips" id="tripsTable"></table></div>
+      <div class="caption">Round-trip price in EUR at the last check · hover or tap a card for both fares · gray: house taken</div>
+    </div>
+  </section>
+  <section class="view" id="view-out" hidden>
+    <div class="block">
+      <div class="toolbar" id="outToolbar"></div>
+      <div class="panel"><table class="grid" id="outTable"></table></div>
+      <div class="caption">Prague → Skiathos one-way fares in EUR · one row per daily check, newest on top</div>
+    </div>
+  </section>
+  <section class="view" id="view-back" hidden>
+    <div class="block">
+      <div class="toolbar" id="backToolbar"></div>
+      <div class="panel"><table class="grid" id="backTable"></table></div>
+      <div class="caption">Skiathos → Prague one-way fares in EUR · one row per daily check, newest on top</div>
+    </div>
+  </section>
+  <section class="view" id="view-house" hidden>
+    <div class="block">
+      <div class="toolbar" id="houseToolbar"></div>
+      <div class="cal-wrap"><div class="cal-months" id="calendar"></div></div>
+      <div class="caption">Fares at the last check: → to Skiathos, ← to Prague</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const DATA = /*__FLIGHT_DATA__*/null;
+
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "style") el.style.cssText = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+const toDate = (iso) => new Date(iso + "T00:00:00Z");
+const addDays = (iso, n) => { const d = toDate(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const daysBetween = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
+const fmt = (iso, opts) => toDate(iso).toLocaleDateString("en-GB", { timeZone: "UTC", ...opts });
+const fmtDay = (iso) => fmt(iso, { weekday: "short", day: "numeric", month: "short" });
+const fmtShort = (iso) => fmt(iso, { day: "numeric", month: "short" });
+const fmtFull = (iso) => fmt(iso, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const eur = (v) => v == null ? "–" : "€" + Math.round(v);
+const quantile = (arr, q) => {
+  const s = [...arr].sort((a, b) => a - b);
+  return s.length ? s[Math.round(q * (s.length - 1))] : 0;
+};
+const median = (arr) => quantile(arr, 0.5);
+
+function localToday() {
+  const q = new URLSearchParams(location.search).get("today");
+  if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q;
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+const TODAY = localToday();
+
+// ---------- colour scale: same as the spreadsheet (green -> white at median -> red) ----------
+const SCALE = { lo: [87, 187, 138], mid: [255, 255, 255], hi: [230, 124, 115] };
+// fade: 0 = full colour, 1 = white (used for trips when the house is taken)
+function makeScale(min, mid, max) {
+  const fn = (v, fade = 0) => {
+    const low = v <= mid;
+    const span = low ? mid - min : max - mid;
+    const w = (span ? Math.max(0, Math.min(1, Math.abs(v - mid) / span)) : low ? 1 : 0) * (1 - fade);
+    const end = low ? SCALE.lo : SCALE.hi;
+    return `rgb(${SCALE.mid.map((x, i) => Math.round(x + (end[i] - x) * w)).join(",")})`;
+  };
+  fn.stops = { min, mid, max };
+  return fn;
+}
+function scaleLegend(scale, { clampLow = false, clampHigh = false } = {}) {
+  const { min, mid, max } = scale.stops;
+  const stops = Array.from({ length: 9 }, (_, i) => scale(i < 4 ? min + (mid - min) * i / 4 : mid + (max - mid) * (i - 4) / 4));
+  return h("span", { class: "scale-legend" },
+    h("span", null, "cheap"),
+    h("span", { class: "scale-stack" },
+      h("span", { class: "scale-bar", style: `background:linear-gradient(90deg,${stops.join(",")})` }),
+      h("span", { class: "ticks" }, h("span", null, (clampLow ? "≤" : "") + "€" + min), h("span", null, "€" + mid),
+        h("span", null, "€" + max + (clampHigh ? "+" : "")))),
+    h("span", null, "expensive"));
+}
+const houseKey = () => h("span", { class: "group" },
+  h("span", null, h("span", { class: "key-bar occ" }), "house occupied"),
+  h("span", null, h("span", { class: "key-bar turn" }), "arrival / departure"));
+
+// ---------- data model ----------
+const offers = DATA.offers;
+const L = offers.length - 1;
+const flights = DATA.flights;
+const upcoming = flights.filter((f) => f >= TODAY);
+const val = (dir, f, i) => (i >= 0 ? (DATA[dir][f] || [])[i] ?? null : null);
+const cur = (dir, f) => val(dir, f, L);
+// Same scale per direction as the from_prague / to_prague sheets: €20 -> median -> €200
+const DIR_SCALE = {};
+for (const dir of ["out", "back"]) {
+  const all = flights.flatMap((f) => (DATA[dir][f] || []).filter((v) => v != null));
+  DIR_SCALE[dir] = makeScale(20, Math.round(median(all)) || 100, 200);
+}
+
+// House: a stay occupies the nights [arrival, departure)
+const stays = DATA.stays;
+const clashes = (from, to) => stays.filter((s) => from < s.departure && s.arrival < to);
+function dayState(iso) {
+  let arr = false, dep = false;
+  for (const s of stays) {
+    if (iso > s.arrival && iso < s.departure) return "occ";
+    if (iso === s.arrival) arr = true;
+    if (iso === s.departure) dep = true;
+  }
+  return arr && dep ? "turn" : arr ? "arr" : dep ? "dep" : "free";
+}
+const STATE_LABEL = { occ: "house occupied", arr: "arrival day at the house", dep: "departure day at the house", turn: "changeover day at the house", free: "house free" };
+
+// ---------- tooltip (hover on desktop, tap on phones) ----------
+const tip = $("tip");
+let selected = null;
+function showTip(e, nodes, target) {
+  tip.classList.remove("pinned");
+  tip.replaceChildren(...nodes);
+  tip.style.display = "block";
+  const pad = 14, w = tip.offsetWidth, ht = tip.offsetHeight;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + w > innerWidth - 8) x = e.clientX - w - pad;
+  if (y + ht > innerHeight - 8) y = e.clientY - ht - pad;
+  tip.style.left = Math.max(8, x) + "px";
+  tip.style.top = Math.max(8, y) + "px";
+  if (selected && selected !== target) selected.classList.remove("sel");
+  selected = target || null;
+}
+function hideTip() {
+  tip.style.display = "none";
+  tip.classList.remove("pinned");
+  if (selected) { selected.classList.remove("sel"); selected = null; }
+}
+// Tapping a cell shows its details; tapping anywhere else closes them
+function bindDetails(el, describe) {
+  el.onmousemove = (e) => describe(e, false);
+  // a pinned (tapped) tooltip stays open, e.g. while its Book button is tapped
+  el.onmouseleave = () => { if (!tip.classList.contains("pinned")) hideTip(); };
+  el.onclick = (e) => { e.stopPropagation(); describe(e, true); };
+}
+document.addEventListener("click", hideTip);
+tip.addEventListener("click", (e) => e.stopPropagation());
+const CAN_HOVER = matchMedia("(hover: hover)").matches;
+addEventListener("scroll", hideTip, { passive: true });
+
+// ---------- round trip cells (departure x trip length) ----------
+const MAX_SLOTS = 6;
+const CELLS = [];
+flights.forEach((dep, di) => {
+  for (let k = 1; k <= MAX_SLOTS; k++) {
+    const ret = flights[di + k];
+    if (!ret) continue;
+    const out = cur("out", dep), back = cur("back", ret);
+    const total = out != null && back != null ? out + back : null;
+    CELLS.push({ dep, ret, k, nights: daysBetween(dep, ret), out, back, total, clash: clashes(dep, ret) });
+  }
+});
+
+// ---------- header ----------
+function renderHeader() {
+  const year = DATA.season.from.slice(0, 4);
+  $("title").replaceChildren("Prague ", h("span", { class: "arrow" }, "⇄"), " Skiathos ", h("span", { class: "yr" }, year));
+  document.title = `Skiathos Flights ${year}`;
+
+  const checked = $("checked");
+  if (L < 0) checked.textContent = "No price checks yet";
+  else {
+    const age = daysBetween(offers[L], TODAY);
+    checked.replaceChildren(...[`Last check: ${fmt(offers[L], { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`,
+      age >= 2 && upcoming.length ? h("span", { class: "stale" }, ` · ⚠ not updated for ${age} days`) : null].filter(Boolean));
+  }
+
+  const onSale = upcoming.filter((f) => cur("out", f) != null || cur("back", f) != null).length;
+  $("notice").textContent = !upcoming.length ? "This season is over – showing the last prices recorded."
+    : onSale === 0 ? "⏳ Fares for these dates are not on sale yet. The page fills in automatically once Ryanair publishes them."
+    : "";
+}
+
+// ---------- price history grid (check date x flight day), like the from_prague / to_prague sheets ----------
+function monthGroups(dates) {
+  const groups = [];
+  dates.forEach((d) => {
+    const m = d.slice(0, 7);
+    if (!groups.length || groups[groups.length - 1].m !== m) groups.push({ m, n: 0 });
+    groups[groups.length - 1].n++;
+  });
+  return groups;
+}
+
+function renderPriceGrid(dir) {
+  const table = $(dir + "Table");
+  const scale = DIR_SCALE[dir];
+  const label = dir === "out" ? "Prague → Skiathos" : "Skiathos → Prague";
+  $(dir + "Toolbar").replaceChildren(scaleLegend(scale, { clampLow: true, clampHigh: true }), houseKey());
+
+  const groups = monthGroups(flights);
+  const monthStarts = new Set(); let k = 0;
+  groups.forEach((g, gi) => { if (gi) monthStarts.add(k); k += g.n; });
+
+  const thead = h("thead", null,
+    h("tr", { class: "months" },
+      h("th", { class: "corner", rowspan: 2 }, "Checked ↓", h("span", { class: "long" }, "  Flight →")),
+      groups.map((g, gi) => h("th", { colspan: g.n, class: gi ? "m-start" : null }, fmt(g.m + "-01", { month: "long" }))),
+      h("th", { class: "avg-h", rowspan: 2 }, "Avg")),
+    h("tr", { class: "days" }, flights.map((f, c) => {
+      const st = dayState(f);
+      return h("th", { class: "day" + (monthStarts.has(c) ? " m-start" : "") + (f < TODAY ? " past" : ""), "data-c": c, title: `${fmtFull(f)} · ${STATE_LABEL[st]}` },
+        h("span", { class: "wd" }, fmt(f, { weekday: "short" }).slice(0, 2)),
+        h("span", { class: "dn" }, toDate(f).getUTCDate()),
+        st !== "free" ? h("i", { class: "house " + st }) : null);
+    })));
+
+  const tbody = h("tbody");
+  for (let i = L; i >= 0; i--) {
+    const offer = offers[i];
+    const newMonth = i < L && offers[i + 1].slice(0, 7) !== offer.slice(0, 7);
+    const tr = h("tr", { class: [i === L && "latest", newMonth && "m-row"].filter(Boolean).join(" ") || null },
+      h("th", null, fmt(offer, { weekday: "short", day: "numeric", month: "short" }) + (i === L || newMonth || i === 0 ? " ’" + offer.slice(2, 4) : "")));
+    const rowVals = [];
+    flights.forEach((f, c) => {
+      const v = val(dir, f, i);
+      const cls = ["p", monthStarts.has(c) && "m-start"];
+      if (f < offer) cls.push("gone");
+      else if (v == null) cls.push("na");
+      if (v != null) rowVals.push(v);
+      tr.append(h("td", { class: cls.filter(Boolean).join(" "), "data-c": c, "data-i": i,
+        style: v != null ? `background:${scale(v)}` : null }, v != null ? v : f < offer ? "" : "·"));
+    });
+    const avg = rowVals.length ? Math.round(rowVals.reduce((a, b) => a + b, 0) / rowVals.length) : null;
+    tr.append(h("td", { class: "p avg", style: avg != null ? `background:${scale(avg)}` : null, title: "Average of this check" }, avg ?? ""));
+    tbody.append(tr);
+  }
+  if (L < 0) tbody.append(h("tr", null, h("th", null, ""), h("td", { colspan: flights.length + 1, style: "padding:24px" }, "No price checks yet.")));
+  table.replaceChildren(thead, tbody);
+
+  // details tooltip + highlight the flight-day header
+  let lastHead = null;
+  bindDetails(table, (e, tapped) => {
+    const td = e.target.closest("td.p:not(.avg)");
+    if (lastHead) { lastHead.classList.remove("col-hl"); lastHead = null; }
+    if (!td) return hideTip();
+    const c = +td.dataset.c, i = +td.dataset.i, f = flights[c], offer = offers[i];
+    lastHead = table.querySelector(`thead th.day[data-c="${c}"]`);
+    if (lastHead) lastHead.classList.add("col-hl");
+    const v = val(dir, f, i), ahead = daysBetween(offer, f);
+    const nodes = [h("div", null, h("b", null, v != null ? eur(v) : f < offer ? "flown" : "not on sale")),
+      h("div", null, `${label}, ${fmtFull(f)}`),
+      h("div", { class: "muted" }, `checked ${fmtFull(offer)}${ahead >= 0 ? ` · ${ahead} days ahead` : ""}`)];
+    const st = dayState(f);
+    if (st !== "free") nodes.push(h("div", { class: "muted" }, STATE_LABEL[st]));
+    if (tapped) td.classList.add("sel");
+    showTip(e, nodes, tapped ? td : null);
+  });
+}
+
+// ---------- round trips, like the trips sheet ----------
+// Ryanair's flight selection page with both dates filled in (1 adult)
+function ryanairUrl(dep, ret) {
+  const { from, to } = DATA.route;
+  const p = new URLSearchParams({
+    adults: 1, teens: 0, children: 0, infants: 0, dateOut: dep, dateIn: ret, isConnectedFlight: false,
+    discount: 0, promoCode: "", isReturn: true, originIata: from, destinationIata: to,
+    tpAdults: 1, tpTeens: 0, tpChildren: 0, tpInfants: 0, tpStartDate: dep, tpEndDate: ret,
+    tpDiscount: 0, tpPromoCode: "", tpOriginIata: from, tpDestinationIata: to,
+  });
+  return "https://www.ryanair.com/gb/en/trip/flights/select?" + p;
+}
+// Bookable when both legs had a fare at the last check and the trip hasn't started
+const bookable = (c) => c.total != null && c.dep >= TODAY;
+function nightsLabel(list) {
+  const u = [...new Set(list)].sort((a, b) => a - b);
+  if (!u.length) return "";
+  const named = { 7: "1 week", 14: "2 weeks", 21: "3 weeks", 28: "4 weeks" };
+  if (u.length === 1) return named[u[0]] || `${u[0]} nights`;
+  return `${u[0]}–${u[u.length - 1]} nights`;
+}
+
+const tripState = { freeOnly: false, showPast: false };
+function renderTrips() {
+  const table = $("tripsTable");
+  const byKey = new Map(CELLS.map((c) => [c.dep + "|" + c.k, c]));
+  const totals = CELLS.filter((c) => c.total != null && c.dep >= TODAY).map((c) => c.total);
+  // 5th / 95th percentile ends, so a single outlier doesn't wash out the other colours
+  const scale = makeScale(quantile(totals, 0.05), median(totals), quantile(totals, 0.95));
+
+  const freeBox = h("input", { type: "checkbox", checked: tripState.freeOnly || null,
+    onchange: (e) => { tripState.freeOnly = e.target.checked; table.classList.toggle("free-only", tripState.freeOnly); } });
+  const pastBox = h("input", { type: "checkbox", checked: tripState.showPast || null,
+    onchange: (e) => { tripState.showPast = e.target.checked; table.classList.toggle("show-past", tripState.showPast); } });
+  $("tripsToolbar").replaceChildren(...[
+    totals.length ? scaleLegend(scale, { clampLow: true, clampHigh: true }) : h("span"),
+    h("span", { class: "group" },
+      h("label", { class: "toggle" }, freeBox, "Only when the house is free"),
+      upcoming.length < flights.length ? h("label", { class: "toggle" }, pastBox, "Show past departures") : null),
+  ]);
+
+  table.className = "grid trips" + (tripState.freeOnly ? " free-only" : "") + (tripState.showPast ? " show-past" : "");
+  const thead = h("thead", null, h("tr", null,
+    h("th", { class: "corner" }, "Departure"),
+    Array.from({ length: MAX_SLOTS }, (_, i) => h("th", null, nightsLabel(CELLS.filter((c) => c.k === i + 1).map((c) => c.nights))))));
+
+  const tbody = h("tbody");
+  flights.forEach((dep) => {
+    const tr = h("tr", { class: dep < TODAY ? "past" : null },
+      h("th", null, h("span", { class: "dn" }, fmt(dep, { weekday: "long" })),
+        h("span", { class: "dd" }, fmt(dep, { day: "numeric", month: "short", year: "2-digit" }))));
+    for (let k = 1; k <= MAX_SLOTS; k++) {
+      const c = byKey.get(dep + "|" + k);
+      if (!c) { tr.append(h("td", { class: "t" }, h("div", { class: "card empty" }))); continue; }
+      const taken = c.clash.length > 0;
+      const link = bookable(c);
+      tr.append(h("td", { class: "t" },
+        h(link ? "a" : "div", { class: "card" + (taken ? " taken" : ""), "data-key": dep + "|" + k,
+            href: link ? ryanairUrl(c.dep, c.ret) : null, target: link ? "_blank" : null, rel: link ? "noopener" : null,
+            style: c.total != null ? `background:${scale(c.total, taken ? 0.7 : 0)}` : `background:var(--gone)` },
+          c.total != null ? h("div", { class: "tot" }, c.total) : h("div", { class: "na" }, "not on sale"),
+          h("div", { class: "ret" }, `back ${fmtDay(c.ret)}`))));
+    }
+    tbody.append(tr);
+  });
+  table.replaceChildren(thead, tbody);
+
+  const describe = (e, tapped) => {
+    const card = e.target.closest(".card[data-key]");
+    if (!card) return hideTip();
+    const c = byKey.get(card.dataset.key);
+    const nodes = [h("div", null, h("b", null, c.total != null ? eur(c.total) : "not on sale"), ` · ${c.nights} nights`),
+      h("div", null, `${fmtDay(c.dep)} → ${fmtDay(c.ret)}`),
+      h("div", { class: "muted" }, `to Skiathos ${eur(c.out)} · to Prague ${eur(c.back)}`),
+      h("div", { class: "muted" }, c.clash.length
+        ? "✕ house taken: " + c.clash.map((s) => `${fmtShort(s.arrival)} – ${fmtShort(s.departure)}`).join(", ")
+        : "✓ house free")];
+    if (bookable(c)) {
+      nodes.push(tapped
+        ? h("a", { class: "book", href: ryanairUrl(c.dep, c.ret), target: "_blank", rel: "noopener" }, "Book on Ryanair ↗")
+        : h("div", { class: "hint-book" }, "Click to book on Ryanair ↗"));
+    }
+    if (tapped) card.classList.add("sel");
+    showTip(e, nodes, tapped ? card : null);
+    if (tapped) tip.classList.add("pinned");
+  };
+  bindDetails(table, describe);
+  // Desktop: a click on a card opens Ryanair (normal link). Phones: first tap shows details with a Book button.
+  table.onclick = (e) => {
+    const card = e.target.closest(".card[data-key]");
+    if (!card) return;
+    e.stopPropagation();
+    if (CAN_HOVER && card.tagName === "A") { hideTip(); return; }
+    e.preventDefault();
+    describe(e, true);
+  };
+}
+
+// ---------- house calendar, like the calendar sheet ----------
+function renderCalendar() {
+  $("houseToolbar").replaceChildren(h("span", { class: "group" },
+    h("span", null, h("span", { class: "key-sw", style: "background:var(--free-flight)" }), "flight day, house free"),
+    h("span", null, h("span", { class: "key-sw", style: "background:var(--turn-soft)" }), "arrival / departure"),
+    h("span", null, h("span", { class: "key-sw", style: "background:var(--occ-soft)" }), "occupied")));
+  const box = $("calendar");
+  box.replaceChildren();
+  const flightSet = new Set(flights);
+  const start = DATA.season.from.slice(0, 7), end = DATA.season.to.slice(0, 7);
+  for (let m = start + "-01"; m.slice(0, 7) <= end; m = addDays(m, 32).slice(0, 7) + "-01") {
+    const grid = h("div", { class: "cal" }, ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => h("div", { class: "dow" }, d)));
+    const offset = (toDate(m).getUTCDay() + 6) % 7;
+    for (let i = 0; i < offset; i++) grid.append(h("div", { class: "d blank" }));
+    for (let d = m; d.slice(0, 7) === m.slice(0, 7); d = addDays(d, 1)) {
+      const st = dayState(d), isFlight = flightSet.has(d);
+      const cls = ["d", st !== "free" ? st : isFlight && "flight", d < TODAY && "past", d === TODAY && "today"].filter(Boolean).join(" ");
+      grid.append(h("div", { class: cls, title: `${fmtFull(d)} · ${STATE_LABEL[st]}` },
+        h("span", { class: "n" }, toDate(d).getUTCDate()),
+        isFlight ? [h("span", { class: "pl" }, "✈"),
+          h("div", { class: "fr" }, h("i", null, "→"), cur("out", d) ?? "–"),
+          h("div", { class: "fr" }, h("i", null, "←"), cur("back", d) ?? "–")] : null));
+    }
+    box.append(h("div", { class: "month" }, h("h3", null, fmt(m, { month: "long", year: "numeric" })), grid));
+  }
+}
+
+// ---------- tabs ----------
+const VIEWS = ["trips", "out", "back", "house"];
+function showView(name) {
+  if (!VIEWS.includes(name)) name = "trips";
+  document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.view === name)));
+  VIEWS.forEach((v) => { $("view-" + v).hidden = v !== name; });
+  hideTip();
+}
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname + location.search + "#" + t.dataset.view);
+  showView(t.dataset.view);
+}));
+
+// ---------- render ----------
+renderHeader();
+renderTrips();
+renderPriceGrid("out");
+renderPriceGrid("back");
+renderCalendar();
+showView(location.hash.slice(1));
+addEventListener("hashchange", () => showView(location.hash.slice(1)));
+</script>
+</body>
+</html>

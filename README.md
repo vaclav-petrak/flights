@@ -1,90 +1,88 @@
 # Flight Price Tracker
 
 ## Overview
-This project is a flight price tracker that monitors and records prices for flights between Prague (PRG) and Skiathos (JSI). It automatically fetches prices for specified dates, saves the data, and can export it to Google Sheets for easy analysis.
+This project tracks Ryanair prices between Prague (PRG) and Skiathos (JSI). Every day it records the one-way fare for each flight day in the season, then publishes a static website on GitHub Pages. The site shows round-trip combinations, a season calendar with house occupancy, and price history.
+
+Season 2027: flights on **Tuesday and Saturday**, July to October (`config/config.json`).
 
 ## Features
-- Fetches flight prices for multiple dates
-- Tracks prices for both directions (PRG to JSI and JSI to PRG)
-- Saves data locally in a CSV file
-- Exports data to Google Sheets (optional)
-- Avoids duplicate data collection for the same date
+- Daily fares for every flight day, both directions, converted to EUR
+- Retries prices that failed to scrape on later runs the same day
+- Website (`docs/`) published to GitHub Pages after each run:
+  - trip finder: every round trip by length, total price, change since the last check, house free/taken
+  - season calendar with fares and house occupancy
+  - price history chart per flight day or trip
+- House booking kept in a local Excel file. Only the dates are published; names and notes stay local.
 
 ## Project Structure
 ```
 flight_price_tracker/
-│
 ├── src/
-│   ├── main.py
-│   ├── functions.py
-│   └── auth.py
-│
+│   ├── main.py          # scrape today's prices -> data/flights.csv
+│   ├── build_site.py    # data + booking -> docs/ (website)
+│   └── functions.py
+├── site/index.html      # website template (data is injected by build_site.py)
+├── docs/                # generated website, served by GitHub Pages
+├── booking/booking.xlsx # local house booking (git-ignored)
 ├── data/
-│   └── flights.csv
-│
-├── config/
-│   └── credentials.json
-│
-├── requirements.txt
-└── README.md
+│   ├── flights.csv      # current season prices
+│   └── archive/         # past seasons
+├── config/config.json   # season dates and flight days
+└── scripts/
+    ├── run_flight_tracker.sh  # scrape + build + publish (run hourly by launchd)
+    ├── publish_site.sh        # commit data/flights.csv + docs/ and push
+    └── com.petrak.flight-price-tracker.plist  # launchd job definition
 ```
 
 ## Setup
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/flight_price_tracker.git
-   cd flight_price_tracker
-   ```
-
-2. Install UV (if not already installed):
+1. Install UV (if not already installed):
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-3. Install dependencies with UV:
+2. Install dependencies:
 
 ```bash
 uv sync
 ```
 
-4. Set up your Google Sheets API credentials:
-   - Follow the [Google Sheets API Python Quickstart](https://developers.google.com/sheets/api/quickstart/python) to obtain your `credentials.json` file.
-   - Place the `credentials.json` file in the `config/` directory.
+3. GitHub Pages: in the repository settings, set **Pages → Build and deployment → Deploy from a branch → `main` / `docs`**.
+
+## House booking
+Edit `booking/booking.xlsx`, sheet **Stays**: one row per stay with Name, Arrival, Departure and Note.
+Arrival and departure days are changeover days. The nights in between are shown as occupied, and trips that overlap them are marked as taken.
 
 ## Usage
 
-Run the main script to fetch and save flight prices:
-
 ```bash
-uv run python src/main.py
+uv run python src/main.py         # scrape today's prices
+uv run python src/build_site.py   # rebuild docs/ (open docs/index.html to preview)
+scripts/publish_site.sh           # commit and push the site
 ```
 
-For automated execution, you can set up a cron job:
+## Automation
+`scripts/run_flight_tracker.sh` runs every hour via launchd. Each run scrapes, retries any prices that failed earlier, rebuilds the site and pushes it, but only commits when something changed. Unlike cron, launchd runs a missed job as soon as the Mac wakes up, so checks aren't lost while it sleeps.
 
 ```bash
-# Edit crontab
-crontab -e
+# install / reload
+cp scripts/com.petrak.flight-price-tracker.plist ~/Library/LaunchAgents/
+launchctl bootout gui/$(id -u)/com.petrak.flight-price-tracker 2>/dev/null
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.petrak.flight-price-tracker.plist
 
-# Add line to run every hour
-0 * * * * /Users/vaclav/Code/flight_price_tracker/scripts/run_flight_tracker.sh
+# status / run now
+launchctl print gui/$(id -u)/com.petrak.flight-price-tracker | grep -E "state|runs|last exit"
+launchctl kickstart gui/$(id -u)/com.petrak.flight-price-tracker
 ```
 
-I run the script from command line using conda enviroment
+Output is logged to `data/logs/tracker.log` (launchd's own messages go to `data/logs/launchd.log`). The page shows a warning next to "Last check" when prices are more than a day old. The push uses your SSH key, so the key must work without an interactive passphrase prompt (e.g. stored in the macOS keychain).
 
-```bash
-/opt/homebrew/anaconda3/bin/python /Users/vaclav/OneDrive/personal/sw/flight_price_tracker/src/main.py
-```
+## New season
+1. Move `data/flights.csv` to `data/archive/flights_<year>.csv` and start a new file with only the header (or an empty file).
+2. Update `config/config.json`: `flight_dates_from`, `flight_dates_to`, `flight_days`.
+3. Add the stays to `booking/booking.xlsx`.
 
-The script will:
-1. Check if data for the current date has already been collected.
-2. If not, it will fetch prices for all specified dates.
-3. Save the new data to `data/flights.csv`.
-4. Optionally export the data to Google Sheets (uncomment the relevant lines in `main.py` to enable this feature).
-
-## Customization
-- To change the date range or days of the week for price checking, modify the parameters in the `generate_dates()` function call in `src/main.py`.
-- To track different routes, update the airport codes (PRG and JSI) in `src/main.py`.
+To preview an archived season: `uv run python src/build_site.py --flights data/archive/flights_2026.csv --season-from 2026-06-01 --season-to 2026-09-30 --days Monday Thursday --out /tmp/preview`, then open `/tmp/preview/index.html?today=2026-05-20`.
 
 ## Contributing
 Contributions to improve the project are welcome. Please follow these steps:

@@ -1,6 +1,3 @@
-from __future__ import print_function
-from auth import spreadsheet_service
-from auth import drive_service
 import requests
 import time
 import pandas as pd
@@ -11,54 +8,6 @@ import os
 def load_config(config_path = "'./config/config.json"):
     with open(config_path, 'r') as f:
         return json.load(f)
-
-def create_spreadsheet(title):
-    """ Creates new Google spreadsheet spreadsheet """
-    spreadsheet_details = {
-        'properties': {
-            'title': title
-        }
-    }
-    sheet = spreadsheet_service.spreadsheets().create(body=spreadsheet_details,
-                                    fields='spreadsheetId').execute()
-    sheetId = sheet.get('spreadsheetId')
-    print('Spreadsheet ID: {0}'.format(sheetId))
-    permission1 = {
-        'type': 'user',
-        'role': 'writer',
-        'emailAddress': 'vaclavp@gmail.com'
-    }
-    drive_service.permissions().create(fileId=sheetId, body=permission1).execute()
-    return sheetId
-
-def export_to_sheets(df, sheet = 'data', spreadsheet_id = '1UpjPSDufq4DkDN0cQdRGuMNBtHMSoitT5QnytD8HVjo'):
-    """ Exports data to Google sheets """
-    spreadsheet_id = spreadsheet_id
-    
-    df = df.fillna("-").infer_objects(copy=False)
-    
-    # Convert index to datetime strings
-    df.index = df.index.strftime('%Y-%m-%d')
-    
-    # Reset the index to make it a column
-    df_reset = df.reset_index()
-    
-    # Add the index name as the first element in the column list
-    columns = [df.index.name] + df.columns.tolist()
-    
-    # Convert all values to strings
-    values = [[str(cell) for cell in row] for row in df_reset.values.tolist()]
-    
-    body = {
-        'values': [columns] + values
-    }
-    
-    result = spreadsheet_service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id, 
-        range= sheet + '!A1', 
-        valueInputOption='USER_ENTERED', 
-        body=body).execute()
-    print('{0} cells updated.'.format(result.get('updatedCells')))
 
 def convert_currency(amount, from_curr, to_curr="EUR"):
     """

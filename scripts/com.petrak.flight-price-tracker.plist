@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hourly flight price check (scrape, build site, publish).
+  Unlike cron, launchd runs a missed job as soon as the Mac wakes up from sleep.
+  Install: see README ("Automation").
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.petrak.flight-price-tracker</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/vaclav/Code/flight_price_tracker/scripts/run_flight_tracker.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/vaclav/Code/flight_price_tracker/data/logs/launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/vaclav/Code/flight_price_tracker/data/logs/launchd.log</string>
+</dict>
+</plist>

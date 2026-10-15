@@ -9,89 +9,98 @@
 <style>
 :root {
   color-scheme: light only;
+  --page: #f4f3ef;
   --bg: #ffffff;
-  --panel: #f7f7f5;
+  --panel: #f8f8f6;
   --ink: #1b1b1a;
   --ink-2: #5d5c58;
   --muted: #8c8a84;
-  --line: #e4e3de;
-  --line-strong: #c9c7bf;
-  --gone: #f3f3f1;
+  --line: #e7e6e1;
+  --line-strong: #cfcdc5;
+  --gone: #f4f4f2;
   --accent: #1a73e8;
+  --warn: #b45309;
   --occ: #e67c73;
-  --occ-soft: #f6cdc9;
-  --turn: #ffd966;
-  --turn-soft: #fff0b8;
-  --free-flight: #d4ede0;
+  --turn: #f2c94c;
   --cell-ink: #1b1b1a;
+  --shadow: 0 1px 2px rgba(27, 27, 26, 0.04), 0 6px 24px rgba(27, 27, 26, 0.06);
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; background: var(--bg); color: var(--ink);
+  margin: 0; background: var(--page); color: var(--ink);
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 button { font: inherit; color: inherit; }
+.page { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
 
 /* ---------- header ---------- */
-.top { padding: 20px 24px 0; }
-.title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
-h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.015em; }
-.notice { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.top { text-align: center; padding: 32px 0 4px; }
+h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+h1 .arrow { color: var(--muted); font-weight: 400; margin: 0 2px; }
+h1 .yr { color: var(--muted); font-weight: 500; }
+.checked { margin-top: 4px; font-size: 13px; color: var(--ink-2); }
+.checked .stale { color: var(--warn); font-weight: 600; }
+.notice { margin: 10px auto 0; font-size: 13px; color: var(--ink-2); max-width: 640px; }
 .notice:empty { display: none; }
 
-/* ---------- tabs (sheet tabs) ---------- */
-.tabs { display: flex; gap: 2px; margin-top: 16px; border-bottom: 1px solid var(--line-strong); overflow-x: auto; scrollbar-width: none; }
+/* ---------- tabs: segmented control ---------- */
+.tabs {
+  display: inline-flex; gap: 2px; margin: 18px auto 0; padding: 3px; border-radius: 10px;
+  background: #e8e7e2; max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
 .tab {
-  border: 1px solid transparent; border-bottom: 0; background: transparent; padding: 7px 14px 8px;
-  font-size: 13px; color: var(--ink-2); cursor: pointer; border-radius: 6px 6px 0 0; white-space: nowrap;
-  margin-bottom: -1px;
+  border: 0; background: transparent; padding: 6px 16px; font-size: 13px; color: var(--ink-2);
+  cursor: pointer; border-radius: 8px; white-space: nowrap;
 }
-.tab:hover { color: var(--ink); background: var(--panel); }
-.tab[aria-selected="true"] {
-  color: var(--ink); font-weight: 600; background: var(--bg);
-  border-color: var(--line-strong); box-shadow: inset 0 2px 0 var(--accent);
-}
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(27, 27, 26, 0.12); }
 
-/* ---------- toolbar ---------- */
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 12px 0; font-size: 12px; color: var(--ink-2); }
+/* ---------- views ---------- */
+.view { padding: 20px 0 8px; }
+.view[hidden] { display: none; }
+.block { width: fit-content; max-width: 100%; margin: 0 auto; }
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px 24px; padding: 0 2px 10px; font-size: 12px; color: var(--ink-2);
+}
+.toolbar .group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.caption { font-size: 12px; color: var(--muted); padding: 10px 2px 0; }
 .scale-legend { display: inline-flex; align-items: center; gap: 8px; }
-.scale-bar { width: 160px; height: 10px; border-radius: 2px; border: 1px solid var(--line); }
+.scale-bar { width: 160px; height: 8px; border-radius: 4px; }
 .scale-legend .ticks { display: flex; justify-content: space-between; width: 160px; font-variant-numeric: tabular-nums; font-size: 10px; color: var(--muted); }
-.scale-stack { display: inline-flex; flex-direction: column; gap: 2px; padding-top: 12px; }
-.key-sw { display: inline-block; width: 12px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.scale-stack { display: inline-flex; flex-direction: column; gap: 3px; padding-top: 14px; }
+.toolbar .group { padding-top: 2px; }
+.key-bar { display: inline-block; width: 14px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
 .toggle input { margin: 0; accent-color: var(--accent); }
-.hint { color: var(--muted); }
 
-/* ---------- grids ---------- */
-.view { padding: 0 24px 24px; }
-.view[hidden] { display: none; }
-.scroller {
-  overflow: auto; max-height: calc(100vh - 200px); border: 1px solid var(--line);
-  border-radius: 4px; position: relative; background: var(--bg); width: fit-content; max-width: 100%;
+/* ---------- panels + grids ---------- */
+.panel {
+  overflow: auto; max-height: calc(100vh - 230px); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); position: relative;
 }
 table.grid { border-collapse: separate; border-spacing: 0; font-size: 11px; font-variant-numeric: tabular-nums; }
 .grid th, .grid td { padding: 0; }
 .grid thead th {
   position: sticky; top: 0; z-index: 2; background: var(--panel); color: var(--ink-2);
-  font-weight: 500; border-bottom: 1px solid var(--line-strong);
+  font-weight: 500; border-bottom: 1px solid var(--line);
 }
-.grid thead tr.months th { height: 22px; font-size: 11px; color: var(--ink); font-weight: 600; text-align: left; padding-left: 6px; border-bottom: 0; }
-.grid thead tr.days th { top: 22px; }
-.grid thead th.corner { left: 0; z-index: 4; text-align: left; padding: 0 8px; font-weight: 600; color: var(--ink); border-right: 1px solid var(--line-strong); }
+.grid thead tr.months th { height: 24px; font-size: 11px; color: var(--ink); font-weight: 650; text-align: left; padding: 6px 0 0 6px; border-bottom: 0; }
+.grid thead tr.days th { top: 24px; }
+.grid thead th.corner { left: 0; z-index: 4; text-align: left; padding: 0 12px; font-weight: 600; color: var(--ink); border-right: 1px solid var(--line); }
 .grid tbody th {
   position: sticky; left: 0; z-index: 1; background: var(--panel); text-align: left; font-weight: 500;
-  white-space: nowrap; padding: 0 8px; color: var(--ink-2); border-right: 1px solid var(--line-strong);
+  white-space: nowrap; padding: 0 12px; color: var(--ink-2); border-right: 1px solid var(--line);
 }
-.grid th.day { width: 34px; min-width: 34px; height: 38px; text-align: center; line-height: 1.15; vertical-align: bottom; padding-bottom: 7px; }
+.grid th.day { width: 34px; min-width: 34px; height: 40px; text-align: center; line-height: 1.15; vertical-align: bottom; padding-bottom: 8px; }
 .grid th.day .wd { display: block; font-size: 10px; color: var(--muted); }
 .grid th.day .dn { display: block; font-size: 12px; font-weight: 600; color: var(--ink); }
 .grid th.day.past .dn { color: var(--muted); font-weight: 500; }
-.grid th.day .house { position: absolute; left: 3px; right: 3px; bottom: 0; height: 4px; border-radius: 2px 2px 0 0; }
-.house.occ { background: var(--occ); }
-.house.turn, .house.arr, .house.dep { background: var(--turn); }
+.grid th.day .house { position: absolute; left: 4px; right: 4px; bottom: 0; height: 4px; border-radius: 2px 2px 0 0; }
+.house.occ, .key-bar.occ { background: var(--occ); }
+.house.turn, .house.arr, .house.dep, .key-bar.turn { background: var(--turn); }
 .grid .m-start { border-left: 2px solid var(--line-strong); }
 .grid td.p {
   width: 34px; min-width: 34px; height: 21px; text-align: center; color: var(--cell-ink);
@@ -100,125 +109,149 @@ table.grid { border-collapse: separate; border-spacing: 0; font-size: 11px; font
 .grid td.p.m-start { border-left: 2px solid var(--line-strong); }
 .grid td.p.gone { background: var(--gone); }
 .grid td.p.na { color: var(--muted); }
-.grid td.avg { width: 44px; min-width: 44px; font-weight: 600; border-left: 2px solid var(--line-strong); }
-.grid thead th.avg-h { width: 44px; border-left: 2px solid var(--line-strong); vertical-align: bottom; padding-bottom: 7px; text-align: center; color: var(--ink); font-weight: 600; }
+.grid td.avg { width: 46px; min-width: 46px; font-weight: 600; border-left: 2px solid var(--line-strong); }
+.grid thead th.avg-h { width: 46px; border-left: 2px solid var(--line-strong); vertical-align: bottom; padding-bottom: 8px; text-align: center; color: var(--ink); font-weight: 600; }
 .grid tbody tr.m-row > * { border-top: 2px solid var(--line-strong); }
 .grid tbody tr.latest th { color: var(--ink); font-weight: 650; }
 .grid tbody tr:hover th { background: var(--line); color: var(--ink); }
-.grid td.p:hover { outline: 2px solid var(--ink); outline-offset: -2px; position: relative; z-index: 1; }
+.grid td.p:hover, .grid td.p.sel { outline: 2px solid var(--ink); outline-offset: -2px; position: relative; z-index: 1; }
 .grid thead th.col-hl { background: var(--line); }
 
-/* ---------- round trips ---------- */
+/* ---------- round trips: cards ---------- */
 table.trips { font-size: 12px; }
-.trips thead th { height: 34px; padding: 0 8px; text-align: center; vertical-align: middle; color: var(--ink); font-weight: 650; font-size: 12px; }
-.trips thead th.corner { text-align: left; }
-.trips tbody th { height: 54px; padding: 0 14px 0 10px; }
+.trips thead th { height: 38px; padding: 0 6px; text-align: center; vertical-align: middle; color: var(--ink); font-weight: 650; font-size: 12px; }
+.trips thead th.corner { text-align: left; padding-left: 14px; }
+.trips tbody th { padding: 0 16px 0 14px; }
 .trips tbody th .dn { color: var(--ink); font-weight: 600; font-size: 12px; display: block; }
-.trips td.t {
-  width: 128px; min-width: 128px; padding: 5px 8px; vertical-align: top; position: relative; text-align: center;
-  border-right: 2px solid var(--bg); border-bottom: 2px solid var(--bg); color: var(--cell-ink); cursor: default;
+.trips tbody th .dd { color: var(--ink-2); font-weight: 400; font-size: 12px; display: block; }
+.trips tbody tr:first-child td { padding-top: 6px; }
+.trips tbody tr:last-child td { padding-bottom: 6px; }
+.trips td.t { padding: 2px; }
+.trips td.t:last-child { padding-right: 6px; }
+.trips tbody th + td.t { padding-left: 6px; }
+.card {
+  width: 112px; height: 46px; border-radius: 7px; padding: 6px 4px 0; text-align: center;
+  color: var(--cell-ink); cursor: default; transition: transform .08s ease;
 }
-.trips td.t:hover { outline: 2px solid var(--ink); outline-offset: -2px; z-index: 1; }
-.trips td.t.empty { background: var(--gone); }
-.t .tot { font-size: 15px; font-weight: 680; letter-spacing: -0.01em; line-height: 1.2; }
-.t .split, .t .ret { font-size: 10.5px; opacity: 0.75; white-space: nowrap; line-height: 1.3; }
-.t .na { color: var(--muted); font-size: 11px; line-height: 1.2; padding-top: 2px; }
-/* house taken: gray letters */
-.trips td.t.taken { color: var(--muted); }
-.trips.free-only td.t.taken > * { visibility: hidden; }
-.trips.free-only td.t.taken { background: var(--gone) !important; }
+.card:hover, .card.sel { box-shadow: inset 0 0 0 2px var(--ink); }
+.card.empty { background: var(--gone); }
+.card .tot { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+.card .ret { font-size: 10.5px; opacity: 0.75; white-space: nowrap; line-height: 1.35; }
+.card .na { color: var(--muted); font-size: 11px; line-height: 1.2; padding-top: 2px; }
+.card.taken { color: var(--muted); }          /* house taken: faded colour + gray letters */
+.card.taken .ret { opacity: 1; }
+.trips.free-only .card.taken { visibility: hidden; }
 .trips tbody tr.past { display: none; }
 .trips.show-past tbody tr.past { display: table-row; opacity: 0.55; }
 
 /* ---------- house calendar ---------- */
-.cal-months { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px 36px; max-width: 1320px; }
-.month h3 { margin: 0 0 6px; font-size: 14px; font-weight: 650; }
-.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-wrap { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 20px 22px 22px; }
+.cal-months { display: grid; grid-template-columns: repeat(4, 300px); gap: 28px 32px; }
+.month h3 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .cal .dow { font-size: 10px; color: var(--muted); text-align: center; padding-bottom: 2px; }
 .cal .d {
-  min-height: 46px; border-radius: 3px; padding: 2px 4px; font-size: 11px; position: relative;
-  background: var(--panel); color: var(--ink-2);
+  min-height: 54px; border-radius: 6px; padding: 3px 4px 6px; font-size: 11px; position: relative;
+  background: var(--panel); color: var(--ink-2); overflow: hidden;
 }
 .cal .d.blank { background: transparent; }
-.cal .d.flight { background: var(--free-flight); color: var(--ink); }
-.cal .d.occ { background: var(--occ-soft); color: var(--ink); }
-.cal .d.arr, .cal .d.dep, .cal .d.turn { background: var(--turn-soft); color: var(--ink); }
+.cal .d.flight { background: var(--bg); box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--ink); }
+.cal .d::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+.cal .d.occ::after { background: var(--occ); }
+.cal .d.arr::after, .cal .d.dep::after, .cal .d.turn::after { background: var(--turn); }
 .cal .d.today { box-shadow: inset 0 0 0 2px var(--accent); }
 .cal .d .n { font-weight: 600; }
-.cal .d .pl { position: absolute; top: 2px; right: 4px; font-size: 10px; }
-.cal .d .fr { font-size: 10px; font-variant-numeric: tabular-nums; line-height: 1.25; white-space: nowrap; }
-.cal .d .fr i { font-style: normal; color: var(--muted); }
-.cal .d.past { opacity: 0.5; }
+.cal .d .pl { position: absolute; top: 3px; right: 5px; font-size: 10px; color: var(--muted); }
+.cal .d .chip {
+  display: block; margin-top: 2px; border-radius: 3px; font-size: 10px; line-height: 15px;
+  text-align: center; font-variant-numeric: tabular-nums; color: var(--cell-ink); white-space: nowrap;
+}
+.cal .d .chip i { font-style: normal; opacity: 0.6; margin-right: 2px; }
+.cal .d.past { opacity: 0.45; }
 
 /* ---------- tooltip ---------- */
 .tip {
   position: fixed; z-index: 10; pointer-events: none; background: var(--bg); color: var(--ink);
-  border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 9px; font-size: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14); max-width: 280px; display: none; line-height: 1.4;
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+  box-shadow: 0 8px 28px rgba(27, 27, 26, 0.16); max-width: 280px; display: none; line-height: 1.45;
 }
 .tip b { font-size: 14px; font-variant-numeric: tabular-nums; }
 .tip .muted { color: var(--ink-2); }
 
-footer { padding: 0 24px 32px; font-size: 12px; color: var(--muted); }
+footer { text-align: center; padding: 20px 16px 36px; font-size: 12px; color: var(--muted); }
 footer a { color: inherit; }
 
-@media (max-width: 640px) {
-  .top { padding: 14px 16px 0; }
-  h1 { font-size: 20px; }
-  .view { padding: 0 0 24px; }
-  .toolbar { padding: 10px 16px; }
-  .scroller { border-left: 0; border-right: 0; border-radius: 0; max-height: calc(100vh - 180px); }
-  .cal-months { padding: 0 16px; }
-  footer { padding: 0 16px 24px; }
-  .trips td.t { width: 118px; min-width: 118px; padding: 4px 4px; }
+@media (max-width: 1340px) { .cal-months { grid-template-columns: repeat(2, 300px); } }
+@media (max-width: 720px) {
+  .page { padding: 0; }
+  .top { padding: 20px 16px 0; }
+  h1 { font-size: 22px; }
+  .tabs { margin-top: 14px; }
+  .tab { padding: 6px 11px; }
+  .tab .long { display: none; }
+  .view { padding-top: 14px; }
+  .toolbar, .caption { padding-left: 16px; padding-right: 16px; }
+  .panel, .cal-wrap { border-left: 0; border-right: 0; border-radius: 0; max-height: calc(100vh - 200px); }
+  .cal-wrap { padding: 16px; }
+  .cal-months { grid-template-columns: 1fr; }
+  .corner .long { display: none; }
+  .card { width: 98px; }
 }
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="title-row">
-    <h1 id="title">Prague ⇄ Skiathos</h1>
-  </div>
-  <div class="notice" id="notice"></div>
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-view="trips">Round trips</button>
-    <button class="tab" role="tab" data-view="out">To Skiathos</button>
-    <button class="tab" role="tab" data-view="back">To Prague</button>
-    <button class="tab" role="tab" data-view="house">House calendar</button>
-  </nav>
-</header>
+<div class="page">
+  <header class="top">
+    <h1 id="title">Prague <span class="arrow">⇄</span> Skiathos</h1>
+    <div class="checked" id="checked"></div>
+    <div class="notice" id="notice"></div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="trips">Round trips</button>
+      <button class="tab" role="tab" data-view="out">To Skiathos</button>
+      <button class="tab" role="tab" data-view="back">To Prague</button>
+      <button class="tab" role="tab" data-view="house">House<span class="long"> calendar</span></button>
+    </nav>
+  </header>
 
-<section class="view" id="view-trips" hidden>
-  <div class="toolbar" id="tripsToolbar"></div>
-  <div class="scroller"><table class="grid trips" id="tripsTable"></table></div>
-</section>
-<section class="view" id="view-out" hidden>
-  <div class="toolbar" id="outToolbar"></div>
-  <div class="scroller"><table class="grid" id="outTable"></table></div>
-</section>
-<section class="view" id="view-back" hidden>
-  <div class="toolbar" id="backToolbar"></div>
-  <div class="scroller"><table class="grid" id="backTable"></table></div>
-</section>
-<section class="view" id="view-house" hidden>
-  <div class="toolbar">
-    <span><span class="key-sw" style="background:var(--free-flight)"></span>flight day, house free</span>
-    <span><span class="key-sw" style="background:var(--turn-soft)"></span>arrival / departure</span>
-    <span><span class="key-sw" style="background:var(--occ-soft)"></span>occupied</span>
-    <span class="hint">Fares at the last check: → to Skiathos, ← to Prague</span>
-  </div>
-  <div class="cal-months" id="calendar"></div>
-</section>
+  <section class="view" id="view-trips" hidden>
+    <div class="block">
+      <div class="toolbar" id="tripsToolbar"></div>
+      <div class="panel"><table class="grid trips" id="tripsTable"></table></div>
+      <div class="caption">Round-trip price in EUR at the last check · hover or tap a card for both fares · gray: house taken</div>
+    </div>
+  </section>
+  <section class="view" id="view-out" hidden>
+    <div class="block">
+      <div class="toolbar" id="outToolbar"></div>
+      <div class="panel"><table class="grid" id="outTable"></table></div>
+      <div class="caption">Prague → Skiathos one-way fares in EUR · one row per daily check, newest on top</div>
+    </div>
+  </section>
+  <section class="view" id="view-back" hidden>
+    <div class="block">
+      <div class="toolbar" id="backToolbar"></div>
+      <div class="panel"><table class="grid" id="backTable"></table></div>
+      <div class="caption">Skiathos → Prague one-way fares in EUR · one row per daily check, newest on top</div>
+    </div>
+  </section>
+  <section class="view" id="view-house" hidden>
+    <div class="block">
+      <div class="toolbar" id="houseToolbar"></div>
+      <div class="cal-wrap"><div class="cal-months" id="calendar"></div></div>
+      <div class="caption">Fares at the last check: → to Skiathos, ← to Prague</div>
+    </div>
+  </section>
 
-<footer>
-  Ryanair one-way fares in EUR, checked daily. House occupancy from the family booking sheet (dates only).
-  <a href="data.json">Raw data</a>
-</footer>
+  <footer>
+    Ryanair one-way fares, checked daily. House occupancy from the family booking sheet (dates only).
+    <a href="data.json">Raw data</a>
+  </footer>
+</div>
 
 <div class="tip" id="tip" role="tooltip"></div>
 
 <script>
-const DATA = {"route":{"from":"PRG","to":"JSI","fromName":"Prague","toName":"Skiathos"},"season":{"from":"2027-07-01","to":"2027-10-31","days":["Tuesday","Saturday"]},"flights":["2027-07-03","2027-07-06","2027-07-10","2027-07-13","2027-07-17","2027-07-20","2027-07-24","2027-07-27","2027-07-31","2027-08-03","2027-08-07","2027-08-10","2027-08-14","2027-08-17","2027-08-21","2027-08-24","2027-08-28","2027-08-31","2027-09-04","2027-09-07","2027-09-11","2027-09-14","2027-09-18","2027-09-21","2027-09-25","2027-09-28","2027-10-02","2027-10-05","2027-10-09","2027-10-12","2027-10-16","2027-10-19","2027-10-23","2027-10-26","2027-10-30"],"offers":["2026-10-14","2026-10-15"],"out":{"2027-07-03":[138,138],"2027-07-06":[114,114],"2027-07-10":[114,114],"2027-07-13":[126,126],"2027-07-17":[126,126],"2027-07-20":[114,114],"2027-07-24":[114,114],"2027-07-27":[104,104],"2027-07-31":[104,104],"2027-08-03":[114,114],"2027-08-07":[114,114],"2027-08-10":[114,114],"2027-08-14":[104,null],"2027-08-17":[104,null],"2027-08-21":[92,null],"2027-08-24":[126,null],"2027-08-28":[114,null],"2027-08-31":[114,114],"2027-09-04":[150,150],"2027-09-07":[126,126],"2027-09-11":[149,149],"2027-09-14":[114,114],"2027-09-18":[114,114],"2027-09-21":[81,81],"2027-09-25":[71,71],"2027-09-28":[71,71],"2027-10-02":[null,null],"2027-10-05":[null,null],"2027-10-09":[null,null],"2027-10-12":[null,null],"2027-10-16":[null,null],"2027-10-19":[null,null],"2027-10-23":[null,null],"2027-10-26":[null,null],"2027-10-30":[null,null]},"back":{"2027-07-03":[114,114],"2027-07-06":[151,151],"2027-07-10":[138,138],"2027-07-13":[151,151],"2027-07-17":[151,151],"2027-07-20":[138,138],"2027-07-24":[138,138],"2027-07-27":[151,151],"2027-07-31":[126,126],"2027-08-03":[151,151],"2027-08-07":[151,151],"2027-08-10":[166,null],"2027-08-14":[126,null],"2027-08-17":[151,null],"2027-08-21":[126,null],"2027-08-24":[183,null],"2027-08-28":[138,139],"2027-08-31":[183,183],"2027-09-04":[136,136],"2027-09-07":[126,126],"2027-09-11":[138,138],"2027-09-14":[183,183],"2027-09-18":[217,217],"2027-09-21":[150,150],"2027-09-25":[166,166],"2027-09-28":[243,243],"2027-10-02":[null,null],"2027-10-05":[null,null],"2027-10-09":[null,null],"2027-10-12":[null,null],"2027-10-16":[null,null],"2027-10-19":[null,null],"2027-10-23":[null,null],"2027-10-26":[null,null],"2027-10-30":[null,null]},"stays":[{"arrival":"2026-07-27","departure":"2026-08-17"}]};
+const DATA = {"route":{"from":"PRG","to":"JSI","fromName":"Prague","toName":"Skiathos"},"season":{"from":"2027-07-01","to":"2027-10-31","days":["Tuesday","Saturday"]},"flights":["2027-07-03","2027-07-06","2027-07-10","2027-07-13","2027-07-17","2027-07-20","2027-07-24","2027-07-27","2027-07-31","2027-08-03","2027-08-07","2027-08-10","2027-08-14","2027-08-17","2027-08-21","2027-08-24","2027-08-28","2027-08-31","2027-09-04","2027-09-07","2027-09-11","2027-09-14","2027-09-18","2027-09-21","2027-09-25","2027-09-28","2027-10-02","2027-10-05","2027-10-09","2027-10-12","2027-10-16","2027-10-19","2027-10-23","2027-10-26","2027-10-30"],"offers":["2026-10-14","2026-10-15"],"out":{"2027-07-03":[138,138],"2027-07-06":[114,114],"2027-07-10":[114,114],"2027-07-13":[126,126],"2027-07-17":[126,126],"2027-07-20":[114,114],"2027-07-24":[114,114],"2027-07-27":[104,104],"2027-07-31":[104,104],"2027-08-03":[114,114],"2027-08-07":[114,114],"2027-08-10":[114,114],"2027-08-14":[104,105],"2027-08-17":[104,104],"2027-08-21":[92,92],"2027-08-24":[126,126],"2027-08-28":[114,115],"2027-08-31":[114,114],"2027-09-04":[150,150],"2027-09-07":[126,126],"2027-09-11":[149,149],"2027-09-14":[114,114],"2027-09-18":[114,114],"2027-09-21":[81,81],"2027-09-25":[71,71],"2027-09-28":[71,71],"2027-10-02":[null,null],"2027-10-05":[null,null],"2027-10-09":[null,null],"2027-10-12":[null,null],"2027-10-16":[null,null],"2027-10-19":[null,null],"2027-10-23":[null,null],"2027-10-26":[null,null],"2027-10-30":[null,null]},"back":{"2027-07-03":[114,114],"2027-07-06":[151,151],"2027-07-10":[138,138],"2027-07-13":[151,151],"2027-07-17":[151,151],"2027-07-20":[138,138],"2027-07-24":[138,138],"2027-07-27":[151,151],"2027-07-31":[126,126],"2027-08-03":[151,151],"2027-08-07":[151,151],"2027-08-10":[166,166],"2027-08-14":[126,127],"2027-08-17":[151,151],"2027-08-21":[126,126],"2027-08-24":[183,183],"2027-08-28":[138,139],"2027-08-31":[183,183],"2027-09-04":[136,136],"2027-09-07":[126,126],"2027-09-11":[138,138],"2027-09-14":[183,183],"2027-09-18":[217,217],"2027-09-21":[150,150],"2027-09-25":[166,166],"2027-09-28":[243,243],"2027-10-02":[null,null],"2027-10-05":[null,null],"2027-10-09":[null,null],"2027-10-12":[null,null],"2027-10-16":[null,null],"2027-10-19":[null,null],"2027-10-23":[null,null],"2027-10-26":[null,null],"2027-10-30":[null,null]},"stays":[{"arrival":"2026-07-27","departure":"2026-08-17"}]};
 
 // ---------- helpers ----------
 const $ = (id) => document.getElementById(id);
@@ -242,11 +275,14 @@ const addDays = (iso, n) => { const d = toDate(iso); d.setUTCDate(d.getUTCDate()
 const daysBetween = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
 const fmt = (iso, opts) => toDate(iso).toLocaleDateString("en-GB", { timeZone: "UTC", ...opts });
 const fmtDay = (iso) => fmt(iso, { weekday: "short", day: "numeric", month: "short" });
-const fmtDayLong = (iso) => fmt(iso, { weekday: "long", day: "numeric", month: "short" });
 const fmtShort = (iso) => fmt(iso, { day: "numeric", month: "short" });
 const fmtFull = (iso) => fmt(iso, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 const eur = (v) => v == null ? "–" : "€" + Math.round(v);
-const median = (arr) => { const s = [...arr].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+const quantile = (arr, q) => {
+  const s = [...arr].sort((a, b) => a - b);
+  return s.length ? s[Math.round(q * (s.length - 1))] : 0;
+};
+const median = (arr) => quantile(arr, 0.5);
 
 function localToday() {
   const q = new URLSearchParams(location.search).get("today");
@@ -257,30 +293,33 @@ function localToday() {
 const TODAY = localToday();
 
 // ---------- colour scale: same as the spreadsheet (green -> white at median -> red) ----------
-const LIGHT = { lo: [87, 187, 138], mid: [255, 255, 255], hi: [230, 124, 115] };
+const SCALE = { lo: [87, 187, 138], mid: [255, 255, 255], hi: [230, 124, 115] };
+// fade: 0 = full colour, 1 = white (used for trips when the house is taken)
 function makeScale(min, mid, max) {
-  const fn = (v) => {
-    // w: 0 at the median, 1 at the cheap / expensive end
+  const fn = (v, fade = 0) => {
     const low = v <= mid;
     const span = low ? mid - min : max - mid;
-    const w = span ? Math.max(0, Math.min(1, Math.abs(v - mid) / span)) : low ? 1 : 0;
-    const end = low ? LIGHT.lo : LIGHT.hi;
-    const rgb = LIGHT.mid.map((x, i) => Math.round(x + (end[i] - x) * w));
-    return `rgb(${rgb.join(",")})`;
+    const w = (span ? Math.max(0, Math.min(1, Math.abs(v - mid) / span)) : low ? 1 : 0) * (1 - fade);
+    const end = low ? SCALE.lo : SCALE.hi;
+    return `rgb(${SCALE.mid.map((x, i) => Math.round(x + (end[i] - x) * w)).join(",")})`;
   };
   fn.stops = { min, mid, max };
   return fn;
 }
-function scaleLegend(scale, maxLabel) {
+function scaleLegend(scale, { clampLow = false, clampHigh = false, showMid = true } = {}) {
   const { min, mid, max } = scale.stops;
+  const stops = Array.from({ length: 9 }, (_, i) => scale(i < 4 ? min + (mid - min) * i / 4 : mid + (max - mid) * (i - 4) / 4));
   return h("span", { class: "scale-legend" },
     h("span", null, "cheap"),
     h("span", { class: "scale-stack" },
-      h("span", { class: "scale-bar", style: `background:linear-gradient(90deg,${
-        Array.from({ length: 9 }, (_, i) => scale(i < 4 ? min + (mid - min) * i / 4 : mid + (max - mid) * (i - 4) / 4)).join(",")})` }),
-      h("span", { class: "ticks" }, h("span", null, "€" + min), h("span", null, "€" + mid), h("span", null, "€" + max + (maxLabel || "")))),
+      h("span", { class: "scale-bar", style: `background:linear-gradient(90deg,${stops.join(",")})` }),
+      h("span", { class: "ticks" }, h("span", null, (clampLow ? "≤" : "") + "€" + min), h("span", null, showMid ? "€" + mid : ""),
+        h("span", null, "€" + max + (clampHigh ? "+" : "")))),
     h("span", null, "expensive"));
 }
+const houseKey = () => h("span", { class: "group" },
+  h("span", null, h("span", { class: "key-bar occ" }), "house occupied"),
+  h("span", null, h("span", { class: "key-bar turn" }), "arrival / departure"));
 
 // ---------- data model ----------
 const offers = DATA.offers;
@@ -289,6 +328,12 @@ const flights = DATA.flights;
 const upcoming = flights.filter((f) => f >= TODAY);
 const val = (dir, f, i) => (i >= 0 ? (DATA[dir][f] || [])[i] ?? null : null);
 const cur = (dir, f) => val(dir, f, L);
+// Same scale per direction as the from_prague / to_prague sheets: €20 -> median -> €200
+const DIR_SCALE = {};
+for (const dir of ["out", "back"]) {
+  const all = flights.flatMap((f) => (DATA[dir][f] || []).filter((v) => v != null));
+  DIR_SCALE[dir] = makeScale(20, Math.round(median(all)) || 100, 200);
+}
 
 // House: a stay occupies the nights [arrival, departure)
 const stays = DATA.stays;
@@ -304,9 +349,10 @@ function dayState(iso) {
 }
 const STATE_LABEL = { occ: "house occupied", arr: "arrival day at the house", dep: "departure day at the house", turn: "changeover day at the house", free: "house free" };
 
-// ---------- tooltip ----------
+// ---------- tooltip (hover on desktop, tap on phones) ----------
 const tip = $("tip");
-function showTip(e, nodes) {
+let selected = null;
+function showTip(e, nodes, target) {
   tip.replaceChildren(...nodes);
   tip.style.display = "block";
   const pad = 14, w = tip.offsetWidth, ht = tip.offsetHeight;
@@ -315,31 +361,49 @@ function showTip(e, nodes) {
   if (y + ht > innerHeight - 8) y = e.clientY - ht - pad;
   tip.style.left = Math.max(8, x) + "px";
   tip.style.top = Math.max(8, y) + "px";
+  if (selected && selected !== target) selected.classList.remove("sel");
+  selected = target || null;
 }
-const hideTip = () => { tip.style.display = "none"; };
+function hideTip() {
+  tip.style.display = "none";
+  if (selected) { selected.classList.remove("sel"); selected = null; }
+}
+// Tapping a cell shows its details; tapping anywhere else closes them
+function bindDetails(el, describe) {
+  el.onmousemove = (e) => describe(e, false);
+  el.onmouseleave = hideTip;
+  el.onclick = (e) => { e.stopPropagation(); describe(e, true); };
+}
+document.addEventListener("click", hideTip);
+addEventListener("scroll", hideTip, { passive: true });
 
 // ---------- round trip cells (departure x trip length) ----------
 const MAX_SLOTS = 6;
-function tripCells() {
-  const cells = [];
-  flights.forEach((dep, di) => {
-    for (let k = 1; k <= MAX_SLOTS; k++) {
-      const ret = flights[di + k];
-      if (!ret) continue;
-      const out = cur("out", dep), back = cur("back", ret);
-      const total = out != null && back != null ? out + back : null;
-      cells.push({ dep, ret, k, nights: daysBetween(dep, ret), out, back, total, clash: clashes(dep, ret) });
-    }
-  });
-  return cells;
-}
-const CELLS = tripCells();
+const CELLS = [];
+flights.forEach((dep, di) => {
+  for (let k = 1; k <= MAX_SLOTS; k++) {
+    const ret = flights[di + k];
+    if (!ret) continue;
+    const out = cur("out", dep), back = cur("back", ret);
+    const total = out != null && back != null ? out + back : null;
+    CELLS.push({ dep, ret, k, nights: daysBetween(dep, ret), out, back, total, clash: clashes(dep, ret) });
+  }
+});
 
 // ---------- header ----------
 function renderHeader() {
   const year = DATA.season.from.slice(0, 4);
-  $("title").textContent = `Prague ⇄ Skiathos ${year}`;
+  $("title").replaceChildren("Prague ", h("span", { class: "arrow" }, "⇄"), " Skiathos ", h("span", { class: "yr" }, year));
   document.title = `Skiathos Flights ${year}`;
+
+  const checked = $("checked");
+  if (L < 0) checked.textContent = "No price checks yet";
+  else {
+    const age = daysBetween(offers[L], TODAY);
+    checked.replaceChildren(...[`Last check: ${fmt(offers[L], { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`,
+      age >= 2 && upcoming.length ? h("span", { class: "stale" }, ` · ⚠ not updated for ${age} days`) : null].filter(Boolean));
+  }
+
   const onSale = upcoming.filter((f) => cur("out", f) != null || cur("back", f) != null).length;
   $("notice").textContent = !upcoming.length ? "This season is over – showing the last prices recorded."
     : onSale === 0 ? "⏳ Fares for these dates are not on sale yet. The page fills in automatically once Ryanair publishes them."
@@ -359,14 +423,9 @@ function monthGroups(dates) {
 
 function renderPriceGrid(dir) {
   const table = $(dir + "Table");
-  const all = flights.flatMap((f) => (DATA[dir][f] || []).filter((v) => v != null));
-  const scale = makeScale(20, Math.round(median(all)) || 100, 200);
+  const scale = DIR_SCALE[dir];
   const label = dir === "out" ? "Prague → Skiathos" : "Skiathos → Prague";
-  $(dir + "Toolbar").replaceChildren(
-    scaleLegend(scale, "+"),
-    h("span", null, h("span", { class: "key-sw", style: "background:var(--occ)" }), "house occupied"),
-    h("span", null, h("span", { class: "key-sw", style: "background:var(--turn)" }), "arrival / departure"),
-    h("span", { class: "hint" }, `${label} · one row per daily check, newest on top`));
+  $(dir + "Toolbar").replaceChildren(scaleLegend(scale, { clampLow: true, clampHigh: true }), houseKey());
 
   const groups = monthGroups(flights);
   const monthStarts = new Set(); let k = 0;
@@ -374,7 +433,7 @@ function renderPriceGrid(dir) {
 
   const thead = h("thead", null,
     h("tr", { class: "months" },
-      h("th", { class: "corner", rowspan: 2 }, "Checked ↓  Flight →"),
+      h("th", { class: "corner", rowspan: 2 }, "Checked ↓", h("span", { class: "long" }, "  Flight →")),
       groups.map((g, gi) => h("th", { colspan: g.n, class: gi ? "m-start" : null }, fmt(g.m + "-01", { month: "long" }))),
       h("th", { class: "avg-h", rowspan: 2 }, "Avg")),
     h("tr", { class: "days" }, flights.map((f, c) => {
@@ -408,9 +467,9 @@ function renderPriceGrid(dir) {
   if (L < 0) tbody.append(h("tr", null, h("th", null, ""), h("td", { colspan: flights.length + 1, style: "padding:24px" }, "No price checks yet.")));
   table.replaceChildren(thead, tbody);
 
-  // hover: details tooltip + highlight the flight-day header
+  // details tooltip + highlight the flight-day header
   let lastHead = null;
-  table.onmousemove = (e) => {
+  bindDetails(table, (e, tapped) => {
     const td = e.target.closest("td.p:not(.avg)");
     if (lastHead) { lastHead.classList.remove("col-hl"); lastHead = null; }
     if (!td) return hideTip();
@@ -423,9 +482,9 @@ function renderPriceGrid(dir) {
       h("div", { class: "muted" }, `checked ${fmtFull(offer)}${ahead >= 0 ? ` · ${ahead} days ahead` : ""}`)];
     const st = dayState(f);
     if (st !== "free") nodes.push(h("div", { class: "muted" }, STATE_LABEL[st]));
-    showTip(e, nodes);
-  };
-  table.onmouseleave = () => { hideTip(); if (lastHead) lastHead.classList.remove("col-hl"); };
+    if (tapped) td.classList.add("sel");
+    showTip(e, nodes, tapped ? td : null);
+  });
 }
 
 // ---------- round trips, like the trips sheet ----------
@@ -442,67 +501,70 @@ function renderTrips() {
   const table = $("tripsTable");
   const byKey = new Map(CELLS.map((c) => [c.dep + "|" + c.k, c]));
   const totals = CELLS.filter((c) => c.total != null && c.dep >= TODAY).map((c) => c.total);
-  const scale = makeScale(totals.length ? Math.min(...totals) : 0, Math.round(median(totals)), totals.length ? Math.max(...totals) : 1);
+  // 5th / 95th percentile ends, so a single outlier doesn't wash out the other colours
+  const scale = makeScale(quantile(totals, 0.05), median(totals), quantile(totals, 0.95));
 
   const freeBox = h("input", { type: "checkbox", checked: tripState.freeOnly || null,
     onchange: (e) => { tripState.freeOnly = e.target.checked; table.classList.toggle("free-only", tripState.freeOnly); } });
   const pastBox = h("input", { type: "checkbox", checked: tripState.showPast || null,
     onchange: (e) => { tripState.showPast = e.target.checked; table.classList.toggle("show-past", tripState.showPast); } });
   $("tripsToolbar").replaceChildren(...[
-    totals.length ? scaleLegend(scale) : null,
-    h("label", { class: "toggle" }, freeBox, "Only when the house is free"),
-    upcoming.length < flights.length ? h("label", { class: "toggle" }, pastBox, "Show past departures") : null,
-    h("span", { class: "hint" }, "Both fares at the last check · gray text: house taken"),
-  ].filter(Boolean));
+    totals.length ? scaleLegend(scale, { clampLow: true, clampHigh: true }) : h("span"),
+    h("span", { class: "group" },
+      h("label", { class: "toggle" }, freeBox, "Only when the house is free"),
+      upcoming.length < flights.length ? h("label", { class: "toggle" }, pastBox, "Show past departures") : null),
+  ]);
 
   table.className = "grid trips" + (tripState.freeOnly ? " free-only" : "") + (tripState.showPast ? " show-past" : "");
   const thead = h("thead", null, h("tr", null,
     h("th", { class: "corner" }, "Departure"),
-    Array.from({ length: MAX_SLOTS }, (_, i) => {
-      const k = i + 1;
-      return h("th", null, nightsLabel(CELLS.filter((c) => c.k === k).map((c) => c.nights)));
-    })));
+    Array.from({ length: MAX_SLOTS }, (_, i) => h("th", null, nightsLabel(CELLS.filter((c) => c.k === i + 1).map((c) => c.nights))))));
 
   const tbody = h("tbody");
   flights.forEach((dep) => {
     const tr = h("tr", { class: dep < TODAY ? "past" : null },
-      h("th", null, h("span", { class: "dn" }, fmtDayLong(dep))));
+      h("th", null, h("span", { class: "dn" }, fmt(dep, { weekday: "long" })),
+        h("span", { class: "dd" }, fmt(dep, { day: "numeric", month: "short", year: "2-digit" }))));
     for (let k = 1; k <= MAX_SLOTS; k++) {
       const c = byKey.get(dep + "|" + k);
-      if (!c) { tr.append(h("td", { class: "t empty" })); continue; }
+      if (!c) { tr.append(h("td", { class: "t" }, h("div", { class: "card empty" }))); continue; }
       const taken = c.clash.length > 0;
-      tr.append(h("td", { class: "t" + (taken ? " taken" : ""), "data-key": dep + "|" + k,
-          style: c.total != null ? `background:${scale(c.total)}` : null },
-        c.total != null
-          ? [h("div", { class: "tot" }, c.total),
-             h("div", { class: "split" }, `${c.out} + ${c.back}`)]
-          : h("div", { class: "na" }, "not on sale"),
-        h("div", { class: "ret" }, `back ${fmtDayLong(c.ret)}`)));
+      tr.append(h("td", { class: "t" },
+        h("div", { class: "card" + (taken ? " taken" : ""), "data-key": dep + "|" + k,
+            style: c.total != null ? `background:${scale(c.total, taken ? 0.7 : 0)}` : `background:var(--gone)` },
+          c.total != null ? h("div", { class: "tot" }, c.total) : h("div", { class: "na" }, "not on sale"),
+          h("div", { class: "ret" }, `back ${fmtDay(c.ret)}`))));
     }
     tbody.append(tr);
   });
   table.replaceChildren(thead, tbody);
 
-  table.onmousemove = (e) => {
-    const td = e.target.closest("td.t[data-key]");
-    if (!td) return hideTip();
-    const c = byKey.get(td.dataset.key);
+  bindDetails(table, (e, tapped) => {
+    const card = e.target.closest(".card[data-key]");
+    if (!card) return hideTip();
+    const c = byKey.get(card.dataset.key);
     const nodes = [h("div", null, h("b", null, c.total != null ? eur(c.total) : "not on sale"), ` · ${c.nights} nights`),
       h("div", null, `${fmtDay(c.dep)} → ${fmtDay(c.ret)}`),
-      h("div", { class: "muted" }, `to Skiathos ${eur(c.out)} · to Prague ${eur(c.back)}`)];
-    nodes.push(h("div", { class: "muted" }, c.clash.length
-      ? "✕ house taken: " + c.clash.map((s) => `${fmtShort(s.arrival)} – ${fmtShort(s.departure)}`).join(", ")
-      : "✓ house free"));
-    showTip(e, nodes);
-  };
-  table.onmouseleave = hideTip;
+      h("div", { class: "muted" }, `to Skiathos ${eur(c.out)} · to Prague ${eur(c.back)}`),
+      h("div", { class: "muted" }, c.clash.length
+        ? "✕ house taken: " + c.clash.map((s) => `${fmtShort(s.arrival)} – ${fmtShort(s.departure)}`).join(", ")
+        : "✓ house free")];
+    if (tapped) card.classList.add("sel");
+    showTip(e, nodes, tapped ? card : null);
+  });
 }
 
 // ---------- house calendar, like the calendar sheet ----------
 function renderCalendar() {
+  $("houseToolbar").replaceChildren(scaleLegend(DIR_SCALE.out, { clampLow: true, clampHigh: true, showMid: false }), houseKey());
   const box = $("calendar");
   box.replaceChildren();
   const flightSet = new Set(flights);
+  const chip = (dir, d, arrow) => {
+    const v = cur(dir, d);
+    return h("span", { class: "chip", style: v != null ? `background:${DIR_SCALE[dir](v)}` : `background:var(--gone);color:var(--muted)` },
+      h("i", null, arrow), v ?? "–");
+  };
   const start = DATA.season.from.slice(0, 7), end = DATA.season.to.slice(0, 7);
   for (let m = start + "-01"; m.slice(0, 7) <= end; m = addDays(m, 32).slice(0, 7) + "-01") {
     const grid = h("div", { class: "cal" }, ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => h("div", { class: "dow" }, d)));
@@ -510,12 +572,10 @@ function renderCalendar() {
     for (let i = 0; i < offset; i++) grid.append(h("div", { class: "d blank" }));
     for (let d = m; d.slice(0, 7) === m.slice(0, 7); d = addDays(d, 1)) {
       const st = dayState(d), isFlight = flightSet.has(d);
-      const cls = ["d", st !== "free" ? st : isFlight && "flight", d < TODAY && "past", d === TODAY && "today"].filter(Boolean).join(" ");
+      const cls = ["d", st !== "free" && st, isFlight && "flight", d < TODAY && "past", d === TODAY && "today"].filter(Boolean).join(" ");
       grid.append(h("div", { class: cls, title: `${fmtFull(d)} · ${STATE_LABEL[st]}` },
         h("span", { class: "n" }, toDate(d).getUTCDate()),
-        isFlight ? h("span", { class: "pl" }, "✈") : null,
-        isFlight ? h("div", { class: "fr" }, h("i", null, "→ "), cur("out", d) ?? "–") : null,
-        isFlight ? h("div", { class: "fr" }, h("i", null, "← "), cur("back", d) ?? "–") : null));
+        isFlight ? [h("span", { class: "pl" }, "✈"), chip("out", d, "→"), chip("back", d, "←")] : null));
     }
     box.append(h("div", { class: "month" }, h("h3", null, fmt(m, { month: "long", year: "numeric" })), grid));
   }
@@ -535,18 +595,13 @@ document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () 
 }));
 
 // ---------- render ----------
-function renderAll() {
-  renderHeader();
-  renderTrips();
-  renderPriceGrid("out");
-  renderPriceGrid("back");
-  renderCalendar();
-}
-
-renderAll();
+renderHeader();
+renderTrips();
+renderPriceGrid("out");
+renderPriceGrid("back");
+renderCalendar();
 showView(location.hash.slice(1));
 addEventListener("hashchange", () => showView(location.hash.slice(1)));
-addEventListener("scroll", hideTip, { passive: true });
 </script>
 </body>
 </html>

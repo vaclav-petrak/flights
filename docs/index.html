@@ -79,6 +79,12 @@ h1 .yr { color: var(--muted); font-weight: 500; }
 .key-bar { display: inline-block; width: 14px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
 .toggle input { margin: 0; accent-color: var(--accent); }
+.pax { display: inline-flex; align-items: center; gap: 4px 12px; flex-wrap: wrap; }
+.pax label { display: inline-flex; align-items: center; gap: 4px; cursor: default; }
+.pax select {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 1px 2px; cursor: pointer;
+}
 
 /* ---------- panels + grids ---------- */
 .panel {
@@ -246,7 +252,7 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
     <div class="block">
       <div class="toolbar" id="tripsToolbar"></div>
       <div class="panel"><table class="grid trips" id="tripsTable"></table></div>
-      <div class="caption">Round-trip price in EUR at the last check · hover or tap a card for both fares · gray: house taken</div>
+      <div class="caption">Round-trip price in EUR for all passengers at the last check · hover or tap a card for both fares · gray: house taken</div>
     </div>
   </section>
   <section class="view" id="view-out" hidden>
@@ -536,13 +542,36 @@ function renderPriceGrid(dir) {
 }
 
 // ---------- round trips, like the trips sheet ----------
-// Ryanair's flight selection page with both dates filled in (1 adult)
+// ---------- passengers: Ryanair's four fare types ----------
+// Adults, teens and children pay the same fare. Infants travel on an adult's lap (at most one per adult)
+// for Ryanair's fixed infant fee per flight.
+const PAX_TYPES = [
+  { key: "adults", label: "Adults", ages: "16+ years", min: 1 },
+  { key: "teens", label: "Teens", ages: "12–15 years", min: 0 },
+  { key: "children", label: "Children", ages: "2–11 years", min: 0 },
+  { key: "infants", label: "Infants", ages: "under 2 · €25 per flight, on an adult's lap", min: 0 },
+];
+const PAX_MAX = 9, INFANT_FEE = 25;
+function loadPax() {
+  const pax = { adults: 1, teens: 0, children: 0, infants: 0 };
+  try {
+    const saved = JSON.parse(localStorage.getItem("pax") || "{}");
+    PAX_TYPES.forEach((t) => { if (Number.isInteger(saved[t.key])) pax[t.key] = Math.max(t.min, Math.min(PAX_MAX, saved[t.key])); });
+  } catch (e) { /* storage unavailable: keep 1 adult */ }
+  pax.infants = Math.min(pax.infants, pax.adults);
+  return pax;
+}
+const PAX = loadPax();
+const payers = () => PAX.adults + PAX.teens + PAX.children;
+
+// Ryanair's flight selection page with both dates and the passengers filled in
 function ryanairUrl(dep, ret) {
   const { from, to } = DATA.route;
+  const { adults, teens, children, infants } = PAX;
   const p = new URLSearchParams({
-    adults: 1, teens: 0, children: 0, infants: 0, dateOut: dep, dateIn: ret, isConnectedFlight: false,
+    adults, teens, children, infants, dateOut: dep, dateIn: ret, isConnectedFlight: false,
     discount: 0, promoCode: "", isReturn: true, originIata: from, destinationIata: to,
-    tpAdults: 1, tpTeens: 0, tpChildren: 0, tpInfants: 0, tpStartDate: dep, tpEndDate: ret,
+    tpAdults: adults, tpTeens: teens, tpChildren: children, tpInfants: infants, tpStartDate: dep, tpEndDate: ret,
     tpDiscount: 0, tpPromoCode: "", tpOriginIata: from, tpDestinationIata: to,
   });
   return "https://www.ryanair.com/gb/en/trip/flights/select?" + p;
@@ -561,7 +590,9 @@ const tripState = { freeOnly: false, showPast: false };
 function renderTrips() {
   const table = $("tripsTable");
   const byKey = new Map(CELLS.map((c) => [c.dep + "|" + c.k, c]));
-  const totals = CELLS.filter((c) => c.total != null && c.dep >= TODAY).map((c) => c.total);
+  const n = payers();
+  const price = (c) => c.total != null ? c.total * n + PAX.infants * INFANT_FEE * 2 : null;
+  const totals = CELLS.filter((c) => c.total != null && c.dep >= TODAY).map(price);
   // 5th / 95th percentile ends, so a single outlier doesn't wash out the other colours
   const scale = makeScale(quantile(totals, 0.05), median(totals), quantile(totals, 0.95));
 
@@ -569,8 +600,22 @@ function renderTrips() {
     onchange: (e) => { tripState.freeOnly = e.target.checked; table.classList.toggle("free-only", tripState.freeOnly); } });
   const pastBox = h("input", { type: "checkbox", checked: tripState.showPast || null,
     onchange: (e) => { tripState.showPast = e.target.checked; table.classList.toggle("show-past", tripState.showPast); } });
+  const paxPicker = h("span", { class: "pax" }, PAX_TYPES.map((t) => {
+    const max = t.key === "infants" ? PAX.adults : PAX_MAX;
+    const sel = h("select", { "aria-label": `${t.label} (${t.ages})`,
+      onchange: (e) => {
+        PAX[t.key] = +e.target.value;
+        PAX.infants = Math.min(PAX.infants, PAX.adults);
+        try { localStorage.setItem("pax", JSON.stringify(PAX)); } catch (err) { /* not remembered */ }
+        renderTrips();
+      } },
+      Array.from({ length: max - t.min + 1 }, (_, i) => t.min + i)
+        .map((v) => h("option", { value: v, selected: v === PAX[t.key] || null }, v)));
+    return h("label", { title: t.ages }, t.label, sel);
+  }));
   $("tripsToolbar").replaceChildren(...[
     totals.length ? scaleLegend(scale, { clampLow: true, clampHigh: true }) : h("span"),
+    paxPicker,
     h("span", { class: "group" },
       h("label", { class: "toggle" }, freeBox, "Only when the house is free"),
       upcoming.length < flights.length ? h("label", { class: "toggle" }, pastBox, "Show past departures") : null),
@@ -594,8 +639,8 @@ function renderTrips() {
       tr.append(h("td", { class: "t" },
         h(link ? "a" : "div", { class: "card" + (taken ? " taken" : ""), "data-key": dep + "|" + k,
             href: link ? ryanairUrl(c.dep, c.ret) : null, target: link ? "_blank" : null, rel: link ? "noopener" : null,
-            style: c.total != null ? `background:${scale(c.total, taken ? 0.7 : 0)}` : `background:var(--gone)` },
-          c.total != null ? h("div", { class: "tot" }, c.total) : h("div", { class: "na" }, "not on sale"),
+            style: c.total != null ? `background:${scale(price(c), taken ? 0.7 : 0)}` : `background:var(--gone)` },
+          c.total != null ? h("div", { class: "tot" }, price(c)) : h("div", { class: "na" }, "not on sale"),
           h("div", { class: "ret" }, `back ${fmtDay(c.ret)}`))));
     }
     tbody.append(tr);
@@ -606,9 +651,10 @@ function renderTrips() {
     const card = e.target.closest(".card[data-key]");
     if (!card) return hideTip();
     const c = byKey.get(card.dataset.key);
-    const nodes = [h("div", null, h("b", null, c.total != null ? eur(c.total) : "not on sale"), ` · ${c.nights} nights`),
+    const nodes = [h("div", null, h("b", null, c.total != null ? eur(price(c)) : "not on sale"), ` · ${c.nights} nights`),
       h("div", null, `${fmtDay(c.dep)} → ${fmtDay(c.ret)}`),
-      h("div", { class: "muted" }, `to Skiathos ${eur(c.out)} · to Prague ${eur(c.back)}`),
+      h("div", { class: "muted" }, `${n > 1 ? "per person: " : ""}to Skiathos ${eur(c.out)} · to Prague ${eur(c.back)}`
+        + (PAX.infants ? ` · infants €${INFANT_FEE * 2} each` : "")),
       h("div", { class: "muted" }, c.clash.length
         ? "✕ house taken: " + c.clash.map((s) => `${fmtShort(s.arrival)} – ${fmtShort(s.departure)}`).join(", ")
         : "✓ house free")];

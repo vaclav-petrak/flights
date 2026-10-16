@@ -13,7 +13,7 @@ from datetime import date, datetime
 import pandas as pd
 from openpyxl import load_workbook
 
-from functions import get_dates_between, load_config
+from functions import convert_currency, get_dates_between, load_config
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 TEMPLATE_PATH = os.path.join(ROOT, 'site', 'index.html')
@@ -125,6 +125,22 @@ def load_history(archive_dir, before_year):
     }
 
 
+def eur_to_czk(out_dir):
+    """Today's EUR->CZK rate for the CZK estimates on the page.
+
+    If the rate can't be fetched, keep the one from the last build, so a network hiccup
+    doesn't drop the estimates (and publish a change).
+    """
+    rate = convert_currency(1, 'EUR', 'CZK')
+    if rate is not None:
+        return rate
+    try:
+        with open(os.path.join(out_dir, 'data.json'), encoding='utf-8') as f:
+            return json.load(f).get('czk')
+    except (OSError, ValueError):
+        return None
+
+
 def build(flights_path, config, booking_path, out_dir):
     flight_dates = get_dates_between(
         start_date=config['flight_dates_from'],
@@ -145,6 +161,7 @@ def build(flights_path, config, booking_path, out_dir):
         'back': inbound,
         'stays': load_stays(booking_path),
         'history': load_history(os.path.join(ROOT, 'data', 'archive'), int(config['flight_dates_from'][:4])),
+        'czk': eur_to_czk(out_dir),
     }
 
     os.makedirs(out_dir, exist_ok=True)

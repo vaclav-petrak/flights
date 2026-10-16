@@ -5,6 +5,7 @@ Usage:
     python src/build_site.py --flights data/archive/flights_2026.csv --out <dir>   # preview an old season
 """
 import argparse
+import glob
 import json
 import os
 from datetime import date, datetime
@@ -17,6 +18,9 @@ from functions import get_dates_between, load_config
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 TEMPLATE_PATH = os.path.join(ROOT, 'site', 'index.html')
 DATA_PLACEHOLDER = '/*__FLIGHT_DATA__*/null'
+# Days-before-departure buckets for the "When to buy" tab, earliest first: (from, to), to=None means "or more"
+LEAD_BUCKETS = [(240, None), (180, 239), (150, 179), (120, 149), (90, 119), (75, 89), (60, 74),
+                (45, 59), (30, 44), (21, 29), (14, 20), (7, 13), (3, 6), (1, 2), (0, 0)]
 
 
 def to_iso(value):
@@ -76,6 +80,51 @@ def load_prices(flights_path, flight_dates):
     return offers, history('From Prague'), history('To Prague')
 
 
+def load_history(archive_dir, before_year):
+    """Median fare by days before departure in past seasons, per direction and flight month.
+
+    Uses archived seasons before `before_year` that were tracked from at least 180 days out
+    (flights_2024.csv only covers the last two months, which would skew the short-notice rows).
+    """
+    frames = []
+    for path in sorted(glob.glob(os.path.join(archive_dir, 'flights_*.csv'))):
+        records = pd.read_csv(path)
+        prices = records.melt(id_vars=['offer_date', 'direction'], var_name='flight', value_name='price').dropna()
+        prices['flight'] = pd.to_datetime(prices['flight'])
+        prices['lead'] = (prices['flight'] - pd.to_datetime(prices['offer_date'])).dt.days
+        prices = prices[prices['lead'] >= 0]
+        if prices.empty or prices['lead'].max() < 180 or prices['flight'].dt.year.min() >= before_year:
+            continue
+        prices['season'] = prices['flight'].dt.year
+        frames.append(prices)
+    if not frames:
+        return None
+    prices = pd.concat(frames)
+
+    def cell(rows):
+        if rows.empty:
+            return None
+        return {'median': int(round(rows['price'].median())), 'flights': int(rows['flight'].nunique()),
+                'seasons': {str(y): int(round(p)) for y, p in rows.groupby('season')['price'].median().items()}}
+
+    table = {}
+    for key, direction in (('out', 'From Prague'), ('back', 'To Prague')):
+        legs = prices[prices['direction'] == direction]
+        table[key] = {}
+        for month, rows in legs.groupby(legs['flight'].dt.month):
+            table[key][str(month)] = [
+                cell(rows[rows['lead'].between(lo, 10_000 if hi is None else hi)])
+                for lo, hi in LEAD_BUCKETS]
+    weekdays = sorted(set(prices['flight']), key=lambda d: d.weekday())
+    return {
+        'seasons': sorted(int(y) for y in prices['season'].unique()),
+        'days': list(dict.fromkeys(d.strftime('%A') for d in weekdays)),
+        'buckets': LEAD_BUCKETS,
+        'out': table['out'],
+        'back': table['back'],
+    }
+
+
 def build(flights_path, config, booking_path, out_dir):
     flight_dates = get_dates_between(
         start_date=config['flight_dates_from'],
@@ -95,6 +144,7 @@ def build(flights_path, config, booking_path, out_dir):
         'out': outbound,
         'back': inbound,
         'stays': load_stays(booking_path),
+        'history': load_history(os.path.join(ROOT, 'data', 'archive'), int(config['flight_dates_from'][:4])),
     }
 
     os.makedirs(out_dir, exist_ok=True)

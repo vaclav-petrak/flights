@@ -24,7 +24,7 @@
   --turn: #f2c94c;
   --occ-soft: #f6cdc9;
   --turn-soft: #fff0b8;
-  --free-flight: #d4ede0;
+  --buy-soft: #c4e7d5;
   --cell-ink: #1b1b1a;
   --shadow: 0 1px 2px rgba(27, 27, 26, 0.04), 0 6px 24px rgba(27, 27, 26, 0.06);
 }
@@ -58,6 +58,7 @@ h1 .yr { color: var(--muted); font-weight: 500; }
   cursor: pointer; border-radius: 8px; white-space: nowrap;
 }
 .tab:hover { color: var(--ink); }
+.tab .short { display: none; }
 .tab[aria-selected="true"] { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(27, 27, 26, 0.12); }
 
 /* ---------- views ---------- */
@@ -151,7 +152,8 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
 
 /* ---------- house calendar ---------- */
 .cal-wrap { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 20px 22px 22px; }
-.cal-months { display: grid; grid-template-columns: repeat(4, 300px); gap: 28px 32px; }
+.cal-months { display: flex; flex-wrap: wrap; gap: 28px 32px; }
+.month { width: 300px; }
 .month h3 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
 .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .cal .dow { font-size: 10px; color: var(--muted); text-align: center; padding-bottom: 2px; }
@@ -161,7 +163,7 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
 }
 .cal .d.blank { background: transparent; }
 /* occupancy colours, like the calendar sheet */
-.cal .d.flight { background: var(--free-flight); color: var(--ink); }
+.cal .d.flight { color: var(--ink); }
 .cal .d.occ { background: var(--occ-soft); color: var(--ink); }
 .cal .d.arr, .cal .d.dep, .cal .d.turn { background: var(--turn-soft); color: var(--ink); }
 .key-sw { display: inline-block; width: 12px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
@@ -171,6 +173,25 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
 .cal .d .fr { font-size: 10px; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; margin-top: 1px; }
 .cal .d .fr i { font-style: normal; color: var(--muted); margin-right: 2px; }
 .cal .d.past { opacity: 0.45; }
+
+/* ---------- when to buy ---------- */
+.rules { list-style: none; margin: 0 auto 18px; padding: 0 16px; text-align: center; font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+.rules b { color: var(--ink); font-weight: 650; }
+.rules .caveat { max-width: 560px; margin: 6px auto 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.rules .caveat:empty { display: none; }
+.buy-cols { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 20px 28px; }
+.buy-cols > div { max-width: 100%; }
+.windows thead th { height: 30px; padding: 0 12px; text-align: center; color: var(--ink); font-weight: 600; }
+.windows thead th.corner { text-align: left; }
+.windows td.w { height: 24px; padding: 0 14px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--bg); cursor: default; }
+.windows td.w.now, .windows td.w.cheap { background: var(--buy-soft); color: var(--ink); }
+.windows td.w.passed { color: var(--muted); }
+.windows td.w:hover, .windows td.w.sel { outline: 2px solid var(--ink); outline-offset: -2px; }
+.history th.day { width: 40px; min-width: 40px; height: 28px; }
+.history td.p { width: 40px; min-width: 40px; }
+.history thead tr.months th { text-align: center; padding: 6px 4px 0; }
+.history tbody tr.best th { color: var(--ink); font-weight: 650; }
+.history tbody tr.best th::after { content: " ◂"; color: #2e9e68; }
 
 /* ---------- tooltip ---------- */
 .tip {
@@ -188,19 +209,19 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
 }
 
 
-@media (max-width: 1340px) { .cal-months { grid-template-columns: repeat(2, 300px); } }
 @media (max-width: 720px) {
   .page { padding: 0; }
   .top { padding: 20px 16px 0; }
   h1 { font-size: 22px; }
   .tabs { margin-top: 14px; }
-  .tab { padding: 6px 11px; }
+  .tab { padding: 6px 8px; }
   .tab .long { display: none; }
+  .tab .short { display: inline; }
   .view { padding-top: 14px; }
   .toolbar, .caption { padding-left: 16px; padding-right: 16px; }
   .panel, .cal-wrap { border-left: 0; border-right: 0; border-radius: 0; max-height: calc(100vh - 200px); }
   .cal-wrap { padding: 16px; }
-  .cal-months { grid-template-columns: 1fr; }
+  .month { width: 100%; }
   .corner .long { display: none; }
   .card { width: 98px; }
 }
@@ -217,6 +238,7 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
       <button class="tab" role="tab" data-view="out">To Skiathos</button>
       <button class="tab" role="tab" data-view="back">To Prague</button>
       <button class="tab" role="tab" data-view="house">House<span class="long"> calendar</span></button>
+      <button class="tab" role="tab" data-view="buy"><span class="long">When to buy</span><span class="short">Buy</span></button>
     </nav>
   </header>
 
@@ -246,6 +268,24 @@ a.card:hover { box-shadow: inset 0 0 0 2px var(--ink), 0 2px 8px rgba(27, 27, 26
       <div class="toolbar" id="houseToolbar"></div>
       <div class="cal-wrap"><div class="cal-months" id="calendar"></div></div>
       <div class="caption">Fares at the last check: → to Skiathos, ← to Prague</div>
+    </div>
+  </section>
+  <section class="view" id="view-buy" hidden>
+    <ul class="rules">
+      <li><b>Buy 60–90 days before the flight</b> (September returns: 75–90)</li>
+      <li>Earlier only if a fare drops to <b>€70 or less</b></li>
+      <li>Avoid buying in <b>February</b> (prices peak, January is close behind) and 3–6 weeks ahead</li>
+      <li class="caveat" id="buyCaveat"></li>
+    </ul>
+    <div class="buy-cols">
+      <div>
+        <div class="toolbar" id="windowsToolbar"></div>
+        <div class="panel"><table class="grid windows" id="windowsTable"></table></div>
+      </div>
+      <div id="historyBox">
+        <div class="toolbar" id="historyToolbar"></div>
+        <div class="panel"><table class="grid history" id="historyTable"></table></div>
+      </div>
     </div>
   </section>
 
@@ -596,7 +636,7 @@ function renderTrips() {
 // ---------- house calendar, like the calendar sheet ----------
 function renderCalendar() {
   $("houseToolbar").replaceChildren(h("span", { class: "group" },
-    h("span", null, h("span", { class: "key-sw", style: "background:var(--free-flight)" }), "flight day, house free"),
+    h("span", null, "✈ flight day"),
     h("span", null, h("span", { class: "key-sw", style: "background:var(--turn-soft)" }), "arrival / departure"),
     h("span", null, h("span", { class: "key-sw", style: "background:var(--occ-soft)" }), "occupied")));
   const box = $("calendar");
@@ -620,8 +660,108 @@ function renderCalendar() {
   }
 }
 
+// ---------- when to buy: buy window per flight + past-season fares by days before departure ----------
+// From the 2025-26 backtest: buying 90-60 days ahead beat every fixed date, and a fare of €70 or less
+// was worth taking at any time. Late-season returns rose fast inside 75 days, so their window closes earlier.
+const BUY_FROM = 90, BUY_TO = 60, LATE_RETURN_TO = 75, CHEAP = 70;
+function buyWindow(dir, f) {
+  const open = addDays(f, -BUY_FROM);
+  const close = addDays(f, -(dir === "back" && f.slice(5, 7) === "09" ? LATE_RETURN_TO : BUY_TO));
+  const fare = cur(dir, f);
+  const state = fare != null && fare <= CHEAP ? "cheap" : TODAY > close ? "passed" : TODAY >= open ? "now" : "later";
+  return { open, close, fare, state };
+}
+const BUY_NOTE = {
+  cheap: `✓ fare is €${CHEAP} or less – worth buying now`,
+  now: "✓ inside the buy window",
+  passed: "buy window has passed",
+};
+const dayList = (days) => days.map((d) => d.slice(0, 3)).join("/");
+// Middle of the window in words: "early May" (1st-10th), "mid May" (11th-20th), "late May"
+function roughly(w) {
+  const d = addDays(w.open, Math.round(daysBetween(w.open, w.close) / 2));
+  const day = toDate(d).getUTCDate();
+  return `${day <= 10 ? "early" : day <= 20 ? "mid" : "late"} ${fmt(d, { month: "long" })}`;
+}
+
+function renderBuy() {
+  const year = DATA.season.from.slice(0, 4);
+  const legs = [["out", "To Skiathos"], ["back", "To Prague"]];
+
+  // buy window per upcoming flight
+  $("windowsToolbar").replaceChildren(h("span", { class: "group" },
+    h("span", null, h("span", { class: "key-sw", style: "background:var(--buy-soft)" }), "good time to buy")));
+  const wt = $("windowsTable");
+  const tbody = h("tbody");
+  upcoming.forEach((f, r) => {
+    const newMonth = r > 0 && upcoming[r - 1].slice(0, 7) !== f.slice(0, 7);
+    tbody.append(h("tr", { class: newMonth ? "m-row" : null }, h("th", null, fmtDay(f)),
+      legs.map(([dir]) => {
+        const w = buyWindow(dir, f);
+        return h("td", { class: "w " + w.state, "data-f": f, "data-dir": dir }, roughly(w));
+      })));
+  });
+  if (!upcoming.length) tbody.append(h("tr", null, h("th", null, ""), h("td", { colspan: 2, style: "padding:16px" }, "No flights left this season.")));
+  wt.replaceChildren(h("thead", null, h("tr", null, h("th", { class: "corner" }, "Flight"),
+    legs.map(([, name]) => h("th", null, name)))), tbody);
+  bindDetails(wt, (e, tapped) => {
+    const td = e.target.closest("td.w");
+    if (!td) return hideTip();
+    const f = td.dataset.f, dir = td.dataset.dir, w = buyWindow(dir, f);
+    const opensIn = daysBetween(TODAY, w.open);
+    const nodes = [h("div", null, h("b", null, `Buy ${fmtShort(w.open)} – ${fmtShort(w.close)}`)),
+      h("div", null, `${dir === "out" ? "Prague → Skiathos" : "Skiathos → Prague"}, ${fmtFull(f)}`),
+      h("div", { class: "muted" }, w.fare != null ? `fare now ${eur(w.fare)}` : "not on sale yet"),
+      h("div", { class: "muted" }, BUY_NOTE[w.state] || `window opens in ${opensIn} days · until then only at €${CHEAP} or less`)];
+    if (tapped) td.classList.add("sel");
+    showTip(e, nodes, tapped ? td : null);
+  });
+
+  // median fare by days before departure in past seasons, for this season's flight months
+  const hist = DATA.history;
+  $("historyBox").hidden = !hist;
+  if (!hist) { $("buyCaveat").textContent = ""; return; }
+  const months = [...new Set(flights.map((f) => String(+f.slice(5, 7))))];
+  const values = legs.flatMap(([dir]) => months.flatMap((m) => hist[dir][m] || [])).filter(Boolean).map((c) => c.median);
+  const scale = makeScale(Math.min(...values), Math.round(median(values)), Math.max(...values));
+  const span = ([lo, hi]) => hi == null ? `${lo}+` : lo === hi ? String(lo) : `${lo}–${hi}`;
+  const monthName = (m) => fmt(`2000-${m.padStart(2, "0")}-01`, { month: "short" });
+  $("historyToolbar").replaceChildren(scaleLegend(scale));
+  const ht = $("historyTable");
+  ht.replaceChildren(
+    h("thead", null,
+      h("tr", { class: "months" }, h("th", { class: "corner", rowspan: 2 }, "Days before"),
+        legs.map(([, name], i) => h("th", { colspan: months.length, class: i ? "m-start" : null }, name))),
+      h("tr", { class: "days" }, legs.flatMap(([dir], i) => months.map((m, j) =>
+        h("th", { class: "day" + (i && !j ? " m-start" : "") }, h("span", { class: "dn" }, monthName(m))))))),
+    h("tbody", null, hist.buckets.map(([lo, hi], b) =>
+      h("tr", { class: lo >= BUY_TO && hi != null && hi < BUY_FROM ? "best" : null }, h("th", null, span([lo, hi])),
+        legs.flatMap(([dir], i) => months.map((m, j) => {
+          const c = (hist[dir][m] || [])[b];
+          return h("td", { class: "p" + (i && !j ? " m-start" : "") + (c ? "" : " na"), "data-dir": dir, "data-m": m, "data-b": b,
+            style: c ? `background:${scale(c.median)}` : null }, c ? c.median : "·");
+        }))))));
+  bindDetails(ht, (e, tapped) => {
+    const td = e.target.closest("td.p");
+    if (!td) return hideTip();
+    const { dir, m, b } = td.dataset, c = (hist[dir][m] || [])[b];
+    const nodes = [h("div", null, h("b", null, c ? eur(c.median) : "no data"), c ? " median" : ""),
+      h("div", null, `${dir === "out" ? "Prague → Skiathos" : "Skiathos → Prague"}, ${fmt(`2000-${m.padStart(2, "0")}-01`, { month: "long" })} flights`),
+      h("div", { class: "muted" }, `bought ${span(hist.buckets[b])} days before`)];
+    if (c) nodes.push(h("div", { class: "muted" }, Object.entries(c.seasons).map(([y, p]) => `${y} ${eur(p)}`).join(" · ") + ` · ${c.flights} flights`));
+    if (tapped) td.classList.add("sel");
+    showTip(e, nodes, tapped ? td : null);
+  });
+
+  const yrs = hist.seasons.length > 1 ? `${hist.seasons.slice(0, -1).join(", ")} and ${hist.seasons.at(-1)}` : hist.seasons[0];
+  const sameDays = dayList(hist.days) === dayList(DATA.season.days);
+  $("buyCaveat").textContent = `Based on daily checks in ${yrs} (${dayList(hist.days)} flights). `
+    + (sameDays ? "" : `${year} flies ${dayList(DATA.season.days)}, and `)
+    + `Ryanair may price ${year} differently, so treat this as a guide, not a guarantee.`;
+}
+
 // ---------- tabs ----------
-const VIEWS = ["trips", "out", "back", "house"];
+const VIEWS = ["trips", "out", "back", "house", "buy"];
 function showView(name) {
   if (!VIEWS.includes(name)) name = "trips";
   document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.view === name)));
@@ -639,6 +779,7 @@ renderTrips();
 renderPriceGrid("out");
 renderPriceGrid("back");
 renderCalendar();
+renderBuy();
 showView(location.hash.slice(1));
 addEventListener("hashchange", () => showView(location.hash.slice(1)));
 </script>

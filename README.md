@@ -62,7 +62,7 @@ scripts/publish_site.sh           # commit and push the site
 ```
 
 ## Automation
-`scripts/run_flight_tracker.sh` runs every hour via launchd. Each run scrapes, retries any prices that failed earlier, rebuilds the site and pushes it, but only commits when something changed. Unlike cron, launchd runs a missed job as soon as the Mac wakes up, so checks aren't lost while it sleeps.
+`scripts/run_flight_tracker.sh` runs every hour via launchd. Runs before 07:00 exit right away (`START_HOUR` in the script), so each day's check starts at 07:00 Prague time. Each run scrapes, retries any prices that failed earlier, rebuilds the site and pushes it, but only commits when something changed. Unlike cron, launchd runs a missed job as soon as the Mac wakes up, so checks aren't lost while it sleeps.
 
 ```bash
 # install / reload

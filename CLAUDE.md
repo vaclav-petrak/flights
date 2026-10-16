@@ -41,7 +41,7 @@ Pipeline: `src/main.py` (scrape) → `data/flights.csv` → `src/build_site.py` 
 
 ## Automation
 
-`scripts/run_flight_tracker.sh` runs hourly through launchd (`scripts/com.petrak.flight-price-tracker.plist`, installed in `~/Library/LaunchAgents`; launchd, unlike cron, catches up after sleep). Each run does scrape → build → `publish_site.sh`. Logs go to `data/logs/tracker.log`.
+`scripts/run_flight_tracker.sh` runs hourly through launchd (`scripts/com.petrak.flight-price-tracker.plist`, installed in `~/Library/LaunchAgents`; launchd, unlike cron, catches up after sleep). Runs before 07:00 exit immediately (`START_HOUR`), so a day's prices are first checked at 07:00. Each run does scrape → build → `publish_site.sh`. Logs go to `data/logs/tracker.log`.
 
 `publish_site.sh` commits only `data/flights.csv` and `docs/`, and only when they changed, then pushes `origin main`. Consequences:
 - Work happens on `main`. On another branch, the hourly job would commit there and push a stale `main`.

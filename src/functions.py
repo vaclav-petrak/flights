@@ -21,7 +21,7 @@ def convert_currency(amount, from_curr, to_curr="EUR"):
         url = f"https://api.frankfurter.app/latest"
         params = {"amount": amount, "from": from_curr, "to": to_curr}
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         response.raise_for_status() # Check for HTTP errors
         data = response.json()
         
@@ -50,7 +50,7 @@ def get_flight_price(date, departure="PRG", arrival="JSI", target_currency="EUR"
 
     if search_date >= current_date:
         try:
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
             data = response.json()
 

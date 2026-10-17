@@ -90,6 +90,8 @@ def main(print_output=True):
     df_to_prg = pd.DataFrame([current_date_to_prg]).set_index('offer_date')
     # Skip the empty frame of a fresh season (pandas warns on concatenating it)
     records = pd.concat([df for df in (saved_records, df_from_prg, df_to_prg) if len(df)])
+    # Keep flight columns in date order when the season is extended (concat appends new ones)
+    records = records[['direction'] + sorted(c for c in records.columns if c != 'direction')]
 
     if print_output: print("Price for all flights collected")
 

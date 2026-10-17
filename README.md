@@ -3,7 +3,7 @@
 ## Overview
 This project tracks Ryanair prices between Prague (PRG) and Skiathos (JSI). Every day it records the one-way fare for each flight day in the season, then publishes a static website on GitHub Pages. The site shows round-trip combinations, a season calendar with house occupancy, and price history.
 
-Season 2027: flights on **Tuesday and Saturday**, July to September (`config/config.json`).
+Season 2027: flights on **Tuesday and Saturday**, June to September (`config/config.json`).
 
 ## Features
 - Daily fares for every flight day, both directions, converted to EUR

@@ -693,7 +693,10 @@ function renderCalendar() {
   const box = $("calendar");
   box.replaceChildren();
   const flightSet = new Set(flights);
-  const start = DATA.season.from.slice(0, 7), end = DATA.season.to.slice(0, 7);
+  // May to October of the season year, or wider if the flight season is
+  const year = DATA.season.from.slice(0, 4);
+  const start = [year + "-05", DATA.season.from.slice(0, 7)].sort()[0];
+  const end = [year + "-10", DATA.season.to.slice(0, 7)].sort()[1];
   for (let m = start + "-01"; m.slice(0, 7) <= end; m = addDays(m, 32).slice(0, 7) + "-01") {
     const grid = h("div", { class: "cal" }, ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => h("div", { class: "dow" }, d)));
     const offset = (toDate(m).getUTCDay() + 6) % 7;

@@ -75,7 +75,12 @@ launchctl print gui/$(id -u)/com.petrak.flight-price-tracker | grep -E "state|ru
 launchctl kickstart gui/$(id -u)/com.petrak.flight-price-tracker
 ```
 
-Output is logged to `data/logs/tracker.log` (launchd's own messages go to `data/logs/launchd.log`). The page shows a warning next to "Last check" when prices are more than a day old. The push uses your SSH key, so the key must work without an interactive passphrase prompt (e.g. stored in the macOS keychain).
+Output is logged to `data/logs/tracker.log` (launchd's own messages go to `data/logs/launchd.log`). The page shows a warning next to "Last check" when prices are more than a day old. The push uses a passphrase-less deploy key, `~/.ssh/flights_deploy_key`, added with write access under the repo's Settings → Deploy keys. It doesn't use your own SSH key, because ssh-agent and the Keychain aren't reliably available to launchd after a reboot or while the Mac is in a dark wake. Pushes time out instead of hanging, because a stuck run would block all later ones. To set up the key on a new Mac:
+
+```bash
+ssh-keygen -q -t ed25519 -N "" -C "flight-price-tracker deploy key" -f ~/.ssh/flights_deploy_key
+cat ~/.ssh/flights_deploy_key.pub   # add on GitHub with "Allow write access"
+```
 
 ## New season
 1. Move `data/flights.csv` to `data/archive/flights_<year>.csv` and start a new file with only the header (or an empty file).

@@ -756,7 +756,9 @@ function renderBuy() {
     tbody.append(h("tr", { class: newMonth ? "m-row" : null }, h("th", null, fmtDay(f)),
       legs.map(([dir]) => {
         const w = buyWindow(dir, f);
-        return h("td", { class: "w " + w.state, "data-f": f, "data-dir": dir }, roughly(w));
+        // green cells say "now", so the text never contradicts the colour
+        const text = w.state === "cheap" ? `now · ${eur(w.fare)}` : w.state === "now" ? `now – ${fmtShort(w.close)}` : roughly(w);
+        return h("td", { class: "w " + w.state, "data-f": f, "data-dir": dir }, text);
       })));
   });
   if (!upcoming.length) tbody.append(h("tr", null, h("th", null, ""), h("td", { colspan: 2, style: "padding:16px" }, "No flights left this season.")));
